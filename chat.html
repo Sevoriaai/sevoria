@@ -114,11 +114,15 @@
       .code-bar { display: flex; align-items: center; justify-content: space-between; padding: 7px 12px; background: #161b22; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 12px; color: #9aa0aa; }
       .code-copy { background: none; border: 1px solid rgba(255,255,255,.16); color: #cdd3da; border-radius: 7px; padding: 3px 11px; font: inherit; font-size: 12px; cursor: pointer; }
       .code-copy:hover { background: rgba(255,255,255,.08); }
-      .typing { display: inline-flex; gap: 5px; padding-top: 9px; }
-      .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--steel); animation: bob 1s infinite; }
-      .typing span:nth-child(2) { animation-delay: .15s; }
-      .typing span:nth-child(3) { animation-delay: .3s; }
-      @keyframes bob { 0%,60%,100% { opacity: .3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+      .typing { display: inline-flex; gap: 6px; padding-top: 10px; }
+      .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--steel); animation: bob 1.4s ease-in-out infinite; }
+      .typing span:nth-child(2) { animation-delay: .18s; }
+      .typing span:nth-child(3) { animation-delay: .36s; }
+      @keyframes bob { 0%,80%,100% { opacity: .25; transform: scale(.7); } 40% { opacity: 1; transform: scale(1); } }
+      @keyframes msgin { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+      .msg { animation: msgin .26s ease both; }
+      .ai-note { max-width: 760px; margin: -4px auto 0; padding: 0 24px 0 68px; font-size: 11px; color: var(--text-mut); display: flex; gap: 10px; align-items: center; opacity: .8; }
+      .ai-note .credit { color: var(--brass-deep); }
 
       .err-row { max-width: 760px; margin: 8px auto; padding: 14px 18px; display: flex; gap: 12px; align-items: center; background: rgba(163,45,45,0.10); border: 1px solid rgba(163,45,45,0.35); border-radius: var(--r2); color: #b5403e; font-size: 14px; }
       html[data-theme="dark"] .err-row { color: #f0a3a3; }
@@ -636,15 +640,24 @@
         };
       }
 
+      let CUR_PLAN = "Free";
+      function setCreditsDisplay(credits) {
+        $("acctSub").textContent = CUR_PLAN + " · " + credits + " credits";
+        $("billCredits").textContent = credits + " credits";
+      }
+      async function spendCredits(cost) {
+        if (!cost || isTest()) return;
+        const { data, error } = await sb.rpc("spend_credits", { cost });
+        if (!error && typeof data === "number") setCreditsDisplay(data);
+      }
       async function loadProfile() {
         const { data: prof } = await sb.from("profiles").select("plan,credits,is_admin").eq("id", USER.id).maybeSingle();
         const plan = prof ? prof.plan : "free";
         const credits = prof ? prof.credits : 0;
-        const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
-        $("acctSub").textContent = planName + " · " + credits + " credits";
-        const pl = document.querySelector("#profMenu .pl"); if (pl) pl.textContent = planName + " plan";
-        $("billPlan").textContent = planName + " plan";
-        $("billCredits").textContent = credits + " credits";
+        CUR_PLAN = plan.charAt(0).toUpperCase() + plan.slice(1);
+        const pl = document.querySelector("#profMenu .pl"); if (pl) pl.textContent = CUR_PLAN + " plan";
+        $("billPlan").textContent = CUR_PLAN + " plan";
+        setCreditsDisplay(credits);
         if (prof && prof.is_admin) $("adminNav").style.display = "block";
       }
 
@@ -723,6 +736,12 @@
       // ---- composer ----
       const input = $("input"), messages = $("messages");
       const EMPTY_HTML = messages.innerHTML; // empty-state markup, restored on New chat
+
+      // Auto-scroll only when the user is already at the bottom. If they scroll
+      // up while Sevoria is replying, leave them where they are.
+      let stick = true;
+      messages.addEventListener("scroll", () => { stick = messages.scrollHeight - messages.scrollTop - messages.clientHeight < 90; });
+      function toBottom(force) { if (force || stick) messages.scrollTop = messages.scrollHeight; }
       function grow() { input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 170) + "px"; }
       input.addEventListener("input", grow);
       input.addEventListener("keydown", (e) => {
@@ -761,7 +780,7 @@
           ? '<div class="ava">' + (window._avatarHTML || "Y") + "</div>"
           : '<div class="ava"><svg width="16" height="16" viewBox="0 0 40 40"><path d="M20 4 L23.9 16.1 L36 20 L23.9 23.9 L20 36 L16.1 23.9 L4 20 L16.1 16.1 Z" fill="#c2922e"/></svg></div>';
         wrap.innerHTML = ava + '<div class="body">' + html + "</div>";
-        messages.appendChild(wrap); messages.scrollTop = messages.scrollHeight; return wrap;
+        messages.appendChild(wrap); toBottom(role === "user"); return wrap;
       }
       function showError(lastUserText) {
         const empty = $("emptyState"); if (empty) empty.remove();
@@ -775,7 +794,7 @@
       function streamInto(el, text) {
         el.textContent = ""; const parts = text.split(/(\s+)/); let i = 0;
         el.classList.add("plain");
-        return new Promise((res) => { const t = setInterval(() => { el.textContent += parts[i++] || ""; messages.scrollTop = messages.scrollHeight; if (i >= parts.length) { clearInterval(t); res(); } }, 16); });
+        return new Promise((res) => { const t = setInterval(() => { el.textContent += parts[i++] || ""; toBottom(); if (i >= parts.length) { clearInterval(t); res(); } }, 16); });
       }
       function enhance(c) {
         c.querySelectorAll("pre code").forEach((b) => {
@@ -794,7 +813,7 @@
       }
 
       // retries, then a real error (never a chatty fake reply).
-      // Returns the reply string, null on failure, or {aborted:true} if stopped.
+      // Returns the response object {reply,credits,sources}, null on failure, or {aborted:true}.
       async function tryAI(convo, signal) {
         for (let a = 0; a < 3; a++) {
           try {
@@ -802,7 +821,7 @@
             if (!res.ok) throw 0;
             const data = await res.json();
             if (data.error || !data.reply) throw 0;
-            return data.reply;
+            return data;
           } catch (e) {
             if (e && e.name === "AbortError") return { aborted: true };
             if (a < 2) await new Promise((r) => setTimeout(r, 1300));
@@ -861,28 +880,38 @@
 
       async function send(text) {
         if (!text || sending) return;
+        stick = true;
         const userBubble = addMessage("user", text.replace(/</g, "&lt;"));
         convo.push({ role: "user", content: text });
         const thinking = addMessage("bot", '<span class="typing"><span></span><span></span><span></span></span>');
         aborter = new AbortController();
         setSending(true);
-        const reply = await tryAI(refHistOn() ? convo : convo.slice(-1), aborter.signal);
+        const res = await tryAI(refHistOn() ? convo : convo.slice(-1), aborter.signal);
         setSending(false); aborter = null;
 
         // Stopped before any answer — undo this turn and hand the text back.
-        if (reply && reply.aborted) {
+        if (res && res.aborted) {
           thinking.remove(); userBubble.remove(); convo.pop();
           input.value = text; grow(); input.focus();
           if (!messages.querySelector(".msg")) { messages.innerHTML = EMPTY_HTML; mountChips(); }
           return;
         }
-        if (reply == null) { thinking.remove(); convo.pop(); showError(text); return; }
+        if (res == null) { thinking.remove(); convo.pop(); showError(text); return; }
 
+        const reply = res.reply;
+        const cost = res.credits || 0;
         convo.push({ role: "assistant", content: reply });
         const body = thinking.querySelector(".body");
         if (streamOn()) await streamInto(body, reply);
         renderRich(body, reply);
-        messages.scrollTop = messages.scrollHeight;
+
+        // "AI-generated" label + what this reply cost.
+        const note = document.createElement("div");
+        note.className = "ai-note";
+        note.innerHTML = '<span>AI-generated. Verify important info.</span>' + (cost ? '<span class="credit">· ' + cost + ' credit' + (cost === 1 ? "" : "s") + '</span>' : "");
+        thinking.after(note);
+        toBottom();
+        spendCredits(cost);
 
         // Persist only after a real answer, so cancelled/failed turns save nothing.
         if (shouldSave()) {
@@ -933,5 +962,6 @@
         $("micBtn").style.display = "none";
       }
     </script>
+      <script src="assets/cookie.js"></script>
   </body>
 </html>

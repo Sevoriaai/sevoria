@@ -91,3 +91,18 @@ insert into public.profiles (id, email)
 
 -- AFTER the owner account exists, make it an admin (run once):
 --   update public.profiles set is_admin = true where email = 'richyrachfansgmial@gmail.com';
+
+-- Spend credits: lets a signed-in user decrement THEIR OWN balance (never below
+-- zero) and returns the new balance. SECURITY DEFINER so it can update the row
+-- even though direct updates are admin-only — but it only ever touches the
+-- caller's row, so a user can spend but can never give themselves credits.
+create or replace function public.spend_credits(cost integer) returns integer
+  language plpgsql security definer set search_path = public as $$
+declare newbal integer;
+begin
+  update public.profiles
+     set credits = greatest(credits - greatest(cost, 0), 0), updated_at = now()
+   where id = auth.uid()
+   returning credits into newbal;
+  return coalesce(newbal, 0);
+end; $$;
