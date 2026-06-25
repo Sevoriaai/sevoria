@@ -14,6 +14,9 @@
     <link rel="stylesheet" href="assets/styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="assets/supabase.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github-dark.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/common.min.js"></script>
     <style>
       :root { --r1: 12px; --r2: 16px; --r3: 22px; --glass: rgba(250,247,240,0.72); --glass-brd: rgba(31,32,36,0.10); --shadow: 0 24px 60px -24px rgba(22,24,29,0.35); }
       html[data-theme="dark"] { --paper: #14161b; --card: #1d2027; --card-2: #242832; --text: #ece7db; --text-mut: #9a958a; --line: rgba(236,231,219,0.10); --ink: #0f1115; --glass: rgba(26,29,36,0.72); --glass-brd: rgba(236,231,219,0.10); --shadow: 0 24px 60px -24px rgba(0,0,0,0.6); }
@@ -91,7 +94,17 @@
       .msg .ava img { width: 100%; height: 100%; object-fit: cover; }
       .msg.user .ava { background: var(--brass); color: #1c1407; }
       .msg.bot .ava { background: var(--ink); }
-      .msg .body { font-size: 15px; color: var(--text); padding-top: 4px; line-height: 1.65; white-space: pre-wrap; }
+      .msg .body { font-size: 15px; color: var(--text); padding-top: 4px; line-height: 1.65; }
+      .msg .body.plain { white-space: pre-wrap; }
+      .msg .body p { margin: 0 0 10px; } .msg .body p:last-child { margin-bottom: 0; }
+      .msg .body ul, .msg .body ol { margin: 8px 0; padding-left: 22px; }
+      .msg .body h1, .msg .body h2, .msg .body h3 { font-weight: 600; margin: 14px 0 6px; font-size: 1.05em; }
+      .msg .body :not(pre) > code { background: var(--card); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .9em; }
+      .msg .body pre { background: #0d1117; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin: 10px 0; }
+      .msg .body pre code { display: block; padding: 14px; overflow-x: auto; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; line-height: 1.55; background: transparent; }
+      .code-bar { display: flex; align-items: center; justify-content: space-between; padding: 7px 12px; background: #161b22; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 12px; color: #9aa0aa; }
+      .code-copy { background: none; border: 1px solid rgba(255,255,255,.16); color: #cdd3da; border-radius: 7px; padding: 3px 11px; font: inherit; font-size: 12px; cursor: pointer; }
+      .code-copy:hover { background: rgba(255,255,255,.08); }
       .typing { display: inline-flex; gap: 5px; padding-top: 9px; }
       .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--steel); animation: bob 1s infinite; }
       .typing span:nth-child(2) { animation-delay: .15s; }
@@ -243,7 +256,7 @@
             <textarea class="chat-input" id="input" rows="1" placeholder="Message Sevoria…"></textarea>
             <button class="send" id="send" type="submit" aria-label="Send"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
           </form>
-          <p class="composer-note">Sevoria can make mistakes — double-check anything important.</p>
+          <p class="composer-note">Sevoria is AI and can make mistakes — verify important info. Never share passwords, card numbers, or private keys.</p>
         </div>
       </main>
     </div>
@@ -478,7 +491,23 @@
       }
       function streamInto(el, text) {
         el.textContent = ""; const parts = text.split(/(\s+)/); let i = 0;
+        el.classList.add("plain");
         return new Promise((res) => { const t = setInterval(() => { el.textContent += parts[i++] || ""; messages.scrollTop = messages.scrollHeight; if (i >= parts.length) { clearInterval(t); res(); } }, 16); });
+      }
+      function enhance(c) {
+        c.querySelectorAll("pre code").forEach((b) => {
+          try { window.hljs && hljs.highlightElement(b); } catch (e) {}
+          const lang = (b.className.match(/language-([\w-]+)/) || [0, "code"])[1];
+          const bar = document.createElement("div"); bar.className = "code-bar";
+          const sp = document.createElement("span"); sp.textContent = lang;
+          const cp = document.createElement("button"); cp.className = "code-copy"; cp.textContent = "Copy";
+          cp.onclick = () => { navigator.clipboard.writeText(b.textContent); cp.textContent = "Copied"; setTimeout(() => (cp.textContent = "Copy"), 1500); };
+          bar.appendChild(sp); bar.appendChild(cp); b.parentElement.prepend(bar);
+        });
+      }
+      function renderRich(el, text) {
+        try { el.classList.remove("plain"); el.innerHTML = window.marked ? marked.parse(text, { breaks: true }) : text; enhance(el); }
+        catch (e) { el.textContent = text; }
       }
 
       // retries, then a real error (never a chatty fake reply)
@@ -504,7 +533,10 @@
         const reply = await tryAI(convo);
         if (reply == null) { thinking.remove(); showError(text); return; }
         convo.push({ role: "assistant", content: reply });
-        await streamInto(thinking.querySelector(".body"), reply);
+        const body = thinking.querySelector(".body");
+        await streamInto(body, reply);
+        renderRich(body, reply);
+        messages.scrollTop = messages.scrollHeight;
       }
       $("composer").addEventListener("submit", (e) => { e.preventDefault(); const t = input.value.trim(); input.value = ""; input.style.height = "auto"; send(t); });
       $("newChat").onclick = () => location.reload();
