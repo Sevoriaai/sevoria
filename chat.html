@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chat — Sevoria</title>
+    <script>
+      (function () {
+        var m = localStorage.getItem("ls_theme") || "system";
+        var dark = m === "dark" || (m === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+      })();
+    </script>
+    <link rel="stylesheet" href="assets/styles.css" />
+    <style>
+      html[data-theme="dark"] { --paper: #1b1e25; --card: #23272f; --text: #ece7db; --text-mut: #9a958a; --line: rgba(236, 231, 219, 0.13); }
+      html, body { height: 100%; }
+      body { overflow: hidden; }
+      .app { display: grid; grid-template-columns: 280px 1fr; height: 100vh; }
+
+      .sidebar { background: var(--ink); color: var(--on-ink); display: flex; flex-direction: column; padding: 14px; gap: 12px; min-height: 0; }
+      .sb-top { display: flex; align-items: center; justify-content: space-between; }
+      .sb-top .brand-name { color: var(--on-ink); }
+      .sb-top .brand:hover { text-decoration: none; }
+      .newchat { width: 100%; }
+      .convo-list { flex: 1; overflow: auto; display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+      .empty-convos { color: var(--on-ink-mut); font-size: 13px; text-align: center; padding: 28px 10px; line-height: 1.5; }
+      .skel { height: 36px; border-radius: 8px; background: rgba(236,231,219,0.06); background-image: linear-gradient(90deg, rgba(236,231,219,0) 0%, rgba(236,231,219,0.12) 50%, rgba(236,231,219,0) 100%); background-size: 200% 100%; background-repeat: no-repeat; animation: sh 1.2s infinite; }
+      @keyframes sh { 0% { background-position: 180% 0; } 100% { background-position: -180% 0; } }
+
+      .sb-bottom { border-top: 1px solid var(--line-ink); padding-top: 12px; }
+      .acct { display: flex; align-items: center; gap: 10px; }
+      .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--brass); color: #1c1407; display: flex; align-items: center; justify-content: center; font-weight: 600; flex: none; }
+      .acct-meta { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+      .acct-name { font-size: 14px; color: var(--on-ink); }
+      .acct-sub { font-size: 12px; color: var(--on-ink-mut); }
+      .icon-btn { background: none; border: none; color: var(--on-ink-mut); cursor: pointer; display: flex; padding: 6px; border-radius: 6px; }
+      .icon-btn:hover { color: var(--on-ink); background: rgba(236,231,219,0.08); }
+      .acct .icon-btn { margin-left: auto; }
+      .sb-close { display: none; }
+
+      .chat-main { display: flex; flex-direction: column; height: 100vh; background: var(--paper); min-width: 0; position: relative; }
+      .chat-top { display: flex; align-items: center; gap: 12px; padding: 11px 18px; border-bottom: 1px solid var(--line); }
+      .menu-btn { display: none; color: var(--text-mut); }
+      .chat-title { font-family: "Fraunces", serif; font-size: 18px; color: var(--text); }
+
+      .model-wrap { margin-left: auto; position: relative; }
+      .model-pick { display: flex; align-items: center; gap: 8px; font: inherit; font-size: 14px; color: var(--text); background: var(--card); border: 1px solid var(--line); padding: 7px 12px; border-radius: 20px; cursor: pointer; }
+      .model-pick .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brass); }
+      .model-menu { position: absolute; right: 0; top: calc(100% + 8px); width: 280px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 18px 40px -18px rgba(0,0,0,0.4); padding: 6px; z-index: 40; display: none; }
+      .model-menu.open { display: block; }
+      .model-opt { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; }
+      .model-opt:hover { background: var(--card); }
+      .model-opt .ot { font-size: 14px; color: var(--text); font-weight: 500; }
+      .model-opt .od { font-size: 12px; color: var(--text-mut); }
+      .model-opt .check { margin-left: auto; color: var(--brass-deep); opacity: 0; }
+      .model-opt.sel .check { opacity: 1; }
+      .model-opt.locked { opacity: 0.6; }
+      .lock-tag { margin-left: auto; font-size: 11px; font-weight: 600; color: var(--brass-deep); background: rgba(194,146,46,0.14); padding: 2px 8px; border-radius: 20px; align-self: center; }
+
+      .messages { flex: 1; overflow: auto; padding: 24px 0; min-height: 0; }
+      .empty { max-width: 680px; margin: 9vh auto 0; text-align: center; padding: 0 24px; }
+      .empty h2 { font-size: 30px; margin: 18px 0 8px; color: var(--text); }
+      .empty p { color: var(--text-mut); margin: 0; }
+      .chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 24px; }
+      .chip { border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 12px 14px; font-size: 14px; color: var(--text); cursor: pointer; text-align: left; max-width: 240px; line-height: 1.4; }
+      .chip:hover { border-color: var(--brass); }
+
+      .msg { max-width: 760px; margin: 0 auto; padding: 14px 24px; display: flex; gap: 14px; }
+      .msg .ava { width: 30px; height: 30px; border-radius: 8px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; }
+      .msg.user .ava { background: var(--brass); color: #1c1407; }
+      .msg.bot .ava { background: var(--ink); }
+      .msg .body { font-size: 15px; color: var(--text); padding-top: 4px; line-height: 1.6; white-space: pre-wrap; }
+      .typing { display: inline-flex; gap: 5px; padding-top: 9px; }
+      .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--steel); animation: bob 1s infinite; }
+      .typing span:nth-child(2) { animation-delay: 0.15s; }
+      .typing span:nth-child(3) { animation-delay: 0.3s; }
+      @keyframes bob { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+
+      .composer { border-top: 1px solid var(--line); padding: 16px 20px; background: var(--paper); }
+      .composer-inner { max-width: 760px; margin: 0 auto; display: flex; gap: 8px; align-items: flex-end; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 7px 8px; position: relative; }
+      .composer-inner:focus-within { border-color: var(--brass); }
+      .tool-btn { width: 36px; height: 36px; border-radius: 10px; border: none; background: none; color: var(--text-mut); cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; }
+      .tool-btn:hover { background: var(--line); color: var(--text); }
+      .chat-input { flex: 1; border: none; background: transparent; resize: none; font: inherit; font-size: 15px; color: var(--text); outline: none; max-height: 160px; padding: 8px 2px; }
+      .send { width: 36px; height: 36px; border-radius: 10px; border: none; background: var(--brass); color: #1c1407; cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; }
+      .send:hover { background: var(--brass-deep); }
+      .composer-note { max-width: 760px; margin: 9px auto 0; text-align: center; font-size: 12px; color: var(--text-mut); }
+
+      .tools-menu { position: absolute; left: 4px; bottom: calc(100% + 8px); width: 250px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 18px 40px -18px rgba(0,0,0,0.4); padding: 6px; display: none; }
+      .tools-menu.open { display: block; }
+      .tool-item { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; cursor: pointer; font-size: 14px; color: var(--text); }
+      .tool-item:hover { background: var(--card); }
+      .tool-item .soon { margin-left: auto; font-size: 11px; color: var(--text-mut); }
+      .tool-item .sw { margin-left: auto; width: 34px; height: 20px; border-radius: 20px; background: var(--brass); position: relative; }
+      .tool-item .sw::after { content: ""; position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; }
+      .tool-item.off .sw { background: var(--line); }
+      .tool-item.off .sw::after { right: auto; left: 2px; }
+
+      .modal-scrim { position: fixed; inset: 0; background: rgba(10,11,14,0.55); display: none; align-items: center; justify-content: center; z-index: 80; padding: 24px; }
+      .modal-scrim.open { display: flex; }
+      .modal { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; max-width: 420px; width: 100%; padding: 30px; text-align: center; }
+      .modal h3 { font-family: "Fraunces", serif; font-size: 26px; margin: 14px 0 8px; color: var(--text); }
+      .modal p { color: var(--text-mut); margin: 0 0 22px; font-size: 15px; }
+      .modal .plans { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+      .modal.settings { max-width: 480px; text-align: left; max-height: 82vh; overflow: auto; padding: 22px 24px; }
+      .set-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+      .set-head h3 { margin: 0; font-size: 22px; }
+      .set-close { background: none; border: none; color: var(--text-mut); cursor: pointer; padding: 6px; border-radius: 8px; display: flex; }
+      .set-close:hover { background: var(--card); }
+      .set-group { padding: 16px 0; border-top: 1px solid var(--line); }
+      .set-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-mut); margin-bottom: 12px; }
+      .set-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 9px 0; font-size: 14px; color: var(--text); }
+      .set-row .muted { color: var(--text-mut); }
+      .set-row a { color: var(--brass-deep); }
+      .seg { display: flex; gap: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 9px; padding: 3px; }
+      .seg button { border: none; background: none; color: var(--text-mut); padding: 6px 13px; border-radius: 6px; cursor: pointer; font: inherit; font-size: 13px; }
+      .seg button.on { background: var(--brass); color: #1c1407; }
+      .sw2 { position: relative; display: inline-block; width: 38px; height: 22px; flex: none; }
+      .sw2 input { opacity: 0; width: 0; height: 0; }
+      .sw2 > span { position: absolute; inset: 0; background: var(--line); border-radius: 20px; cursor: pointer; transition: 0.15s; }
+      .sw2 > span::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: 0.15s; }
+      .sw2 input:checked + span { background: var(--brass); }
+      .sw2 input:checked + span::after { left: 18px; }
+      .link-btn { background: none; border: none; color: var(--brass-deep); cursor: pointer; font: inherit; font-size: 14px; }
+      .set-foot { padding-top: 16px; border-top: 1px solid var(--line); font-size: 12px; color: var(--text-mut); }
+      .set-foot a { color: var(--text-mut); text-decoration: underline; }
+
+      .scrim { display: none; }
+      @media (max-width: 820px) {
+        .app { grid-template-columns: 1fr; }
+        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 280px; transform: translateX(-100%); transition: transform 0.25s ease; z-index: 60; }
+        .sidebar.open { transform: none; }
+        .menu-btn { display: flex; }
+        .sb-close { display: flex; }
+        .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 55; }
+        .scrim.show { display: block; }
+        .model-menu { width: 240px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar" id="sidebar">
+        <div class="sb-top">
+          <a class="brand" href="index.html">
+            <svg width="26" height="26" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="#6b7280" stroke-width="1.2" opacity="0.6"/><path d="M20 4 L23.9 16.1 L36 20 L23.9 23.9 L20 36 L16.1 23.9 L4 20 L16.1 16.1 Z" fill="#c2922e"/></svg>
+            <span class="brand-name">Sevoria</span>
+          </a>
+          <button class="icon-btn sb-close" id="closeSb" aria-label="Close menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+        <button class="btn btn-primary newchat" id="newChat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> New chat</button>
+        <div class="convo-list" id="convoList"></div>
+        <div class="sb-bottom">
+          <div class="acct">
+            <div class="avatar">Y</div>
+            <div class="acct-meta">
+              <span class="acct-name">You</span>
+              <span class="acct-sub">120 credits · resets Jul 1</span>
+            </div>
+            <button class="icon-btn" id="settingsBtn" aria-label="Settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.4 1a7 7 0 0 0-1.7-1L14.5 3h-5l-.3 2.5a7 7 0 0 0-1.7 1l-2.4-1-2 3.5 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 1.7 1l.3 2.5h5l.3-2.5a7 7 0 0 0 1.7-1l2.4 1 2-3.5-2-1.5a7 7 0 0 0 .1-1z"/></svg></button>
+          </div>
+        </div>
+      </aside>
+
+      <div class="scrim" id="scrim"></div>
+
+      <main class="chat-main">
+        <header class="chat-top">
+          <button class="icon-btn menu-btn" id="openSb" aria-label="Open menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+          <div class="chat-title">New chat</div>
+          <div class="model-wrap">
+            <button class="model-pick" id="modelBtn"><span class="dot"></span> <span id="modelLabel">Sevoria Core</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+            <div class="model-menu" id="modelMenu">
+              <div class="model-opt sel" data-tier="core"><div><div class="ot">Sevoria Core</div><div class="od">Fast — great for everyday questions</div></div><span class="check"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12l5 5L20 6"/></svg></span></div>
+              <div class="model-opt locked" data-tier="pro"><div><div class="ot">Sevoria Pro</div><div class="od">Much smarter — powered by a frontier model</div></div><span class="lock-tag">Pro only</span></div>
+              <div class="model-opt locked" data-tier="max"><div><div class="ot">Sevoria Max</div><div class="od">Our most capable — for the hard stuff</div></div><span class="lock-tag">Pro only</span></div>
+            </div>
+          </div>
+        </header>
+
+        <div class="messages" id="messages">
+          <div class="empty" id="emptyState">
+            <svg width="52" height="52" viewBox="0 0 40 40" aria-hidden="true" style="margin:0 auto"><circle cx="20" cy="20" r="17" fill="none" stroke="#6b7280" stroke-width="1.1" opacity="0.5"/><path d="M20 4 L23.9 16.1 L36 20 L23.9 23.9 L20 36 L16.1 23.9 L4 20 L16.1 16.1 Z" fill="#c2922e"/></svg>
+            <h2>How can Sevoria help?</h2>
+            <p>Ask anything — or start with one of these.</p>
+            <div class="chips" id="chips"></div>
+          </div>
+        </div>
+
+        <div class="composer">
+          <form class="composer-inner" id="composer">
+            <button class="tool-btn" id="toolsBtn" type="button" aria-label="Tools"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>
+            <div class="tools-menu" id="toolsMenu">
+              <div class="tool-item" id="searchTool"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg> Web search <span class="sw"></span></div>
+              <div class="tool-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15l-5-5L5 21"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg> Create image <span class="soon">soon</span></div>
+              <div class="tool-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg> Attach files <span class="soon">soon</span></div>
+            </div>
+            <textarea class="chat-input" id="input" rows="1" placeholder="Message Sevoria…"></textarea>
+            <button class="send" id="send" type="submit" aria-label="Send"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+          </form>
+          <p class="composer-note">Sevoria can make mistakes — double-check anything important.</p>
+        </div>
+      </main>
+    </div>
+
+    <div class="modal-scrim" id="upgradeModal">
+      <div class="modal">
+        <svg width="44" height="44" viewBox="0 0 40 40" style="margin:0 auto"><path d="M20 4 L23.9 16.1 L36 20 L23.9 23.9 L20 36 L16.1 23.9 L4 20 L16.1 16.1 Z" fill="#c2922e"/></svg>
+        <h3>Unlock Sevoria Pro</h3>
+        <p>Pro and Max run on frontier models — dramatically sharper answers for the hard, important work. Upgrade to switch them on.</p>
+        <div class="plans">
+          <button class="btn btn-primary" id="seePlans">See plans</button>
+          <button class="btn btn-ghost" id="closeModal">Maybe later</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-scrim" id="settingsModal">
+      <div class="modal settings">
+        <div class="set-head">
+          <h3>Settings</h3>
+          <button class="set-close" id="closeSettings" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+        <div class="set-group">
+          <div class="set-label">Appearance</div>
+          <div class="set-row"><span>Theme</span>
+            <div class="seg" id="themeSeg">
+              <button data-mode="light">Light</button>
+              <button data-mode="dark">Dark</button>
+              <button data-mode="system">System</button>
+            </div>
+          </div>
+        </div>
+        <div class="set-group">
+          <div class="set-label">Chat</div>
+          <div class="set-row"><span>Web search by default</span><label class="sw2"><input type="checkbox" id="setSearch" checked /><span></span></label></div>
+          <div class="set-row"><span>Stream responses</span><label class="sw2"><input type="checkbox" checked /><span></span></label></div>
+          <div class="set-row"><span>Send with Enter</span><label class="sw2"><input type="checkbox" checked /><span></span></label></div>
+        </div>
+        <div class="set-group">
+          <div class="set-label">Account</div>
+          <div class="set-row"><span>Plan</span><span class="muted">Free · 120 credits</span></div>
+          <div class="set-row"><span>Get more power</span><a href="pricing.html">Upgrade to Pro ↗</a></div>
+          <div class="set-row"><span>Session</span><button class="link-btn" id="signOut">Sign out</button></div>
+        </div>
+        <div class="set-foot"><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · Sevoria v0.1</div>
+      </div>
+    </div>
+
+    <script>
+      if (!localStorage.getItem("ls_session")) { window.location.replace("login.html"); }
+      const $ = (id) => document.getElementById(id);
+      const sidebar = $("sidebar"), scrim = $("scrim"), messages = $("messages"), input = $("input");
+      const API = "https://email-wanna-cast-ethical.trycloudflare.com"; // ← swap for your live AI URL once deployed
+
+      $("openSb").onclick = () => { sidebar.classList.add("open"); scrim.classList.add("show"); };
+      const closeSb = () => { sidebar.classList.remove("open"); scrim.classList.remove("show"); };
+      $("closeSb").onclick = closeSb; scrim.onclick = closeSb;
+
+      /* ---- theme + settings ---- */
+      function applyTheme(mode) {
+        localStorage.setItem("ls_theme", mode);
+        const dark = mode === "dark" || (mode === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        document.querySelectorAll("#themeSeg button").forEach((b) => b.classList.toggle("on", b.dataset.mode === mode));
+      }
+      document.querySelectorAll("#themeSeg button").forEach((b) => (b.onclick = () => applyTheme(b.dataset.mode)));
+      applyTheme(localStorage.getItem("ls_theme") || "system");
+      matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+        if ((localStorage.getItem("ls_theme") || "system") === "system") applyTheme("system");
+      });
+      const settingsModal = $("settingsModal");
+      $("settingsBtn").onclick = () => settingsModal.classList.add("open");
+      $("closeSettings").onclick = () => settingsModal.classList.remove("open");
+      settingsModal.onclick = (e) => { if (e.target === settingsModal) settingsModal.classList.remove("open"); };
+      $("signOut").onclick = () => { localStorage.removeItem("ls_session"); location.href = "login.html"; };
+
+      /* ---- conversation list ---- */
+      const list = $("convoList");
+      list.innerHTML = '<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
+      setTimeout(() => { list.innerHTML = '<div class="empty-convos">No conversations yet.<br />Start one below.</div>'; }, 1000);
+
+      /* ---- rotating prompts ---- */
+      const POOL = [
+        "Help me plan a realistic week", "Explain a tricky idea simply", "Draft a reply I keep rewriting",
+        "Pressure-test this decision with me", "Turn these notes into a clear summary", "What am I not thinking about here?",
+        "Help me start something I'm stuck on", "Rewrite this so it sounds like me", "Break this big task into first steps",
+        "Quiz me on something I'm learning",
+      ];
+      const picks = POOL.slice().sort(() => Math.random() - 0.5).slice(0, 3);
+      $("chips").innerHTML = picks.map((p) => '<button class="chip">' + p + "</button>").join("");
+      document.querySelectorAll(".chip").forEach((c) => (c.onclick = () => { input.value = c.textContent; input.focus(); grow(); }));
+
+      /* ---- composer ---- */
+      function grow() { input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 160) + "px"; }
+      input.addEventListener("input", grow);
+      input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("composer").requestSubmit(); } });
+
+      /* ---- model picker ---- */
+      let tier = "core";
+      const modelMenu = $("modelMenu");
+      $("modelBtn").onclick = (e) => { e.stopPropagation(); modelMenu.classList.toggle("open"); };
+      document.querySelectorAll(".model-opt").forEach((o) => (o.onclick = () => {
+        if (o.classList.contains("locked")) { modelMenu.classList.remove("open"); $("upgradeModal").classList.add("open"); return; }
+        tier = o.dataset.tier;
+        document.querySelectorAll(".model-opt").forEach((x) => x.classList.remove("sel"));
+        o.classList.add("sel");
+        $("modelLabel").textContent = o.querySelector(".ot").textContent;
+        modelMenu.classList.remove("open");
+      }));
+      $("closeModal").onclick = () => $("upgradeModal").classList.remove("open");
+      $("seePlans").onclick = () => { window.location.href = "pricing.html"; };
+
+      /* ---- tools menu ---- */
+      const toolsMenu = $("toolsMenu");
+      let searchOn = true;
+      $("toolsBtn").onclick = (e) => { e.stopPropagation(); toolsMenu.classList.toggle("open"); };
+      $("searchTool").onclick = () => { searchOn = !searchOn; $("searchTool").classList.toggle("off", !searchOn); if ($("setSearch")) $("setSearch").checked = searchOn; };
+      document.addEventListener("click", () => { modelMenu.classList.remove("open"); toolsMenu.classList.remove("open"); });
+      modelMenu.onclick = (e) => e.stopPropagation();
+      toolsMenu.onclick = (e) => e.stopPropagation();
+
+      /* ---- messages + streaming ---- */
+      function addMessage(role, html) {
+        const empty = $("emptyState"); if (empty) empty.remove();
+        const wrap = document.createElement("div");
+        wrap.className = "msg " + role;
+        const ava = role === "user" ? '<div class="ava">Y</div>'
+          : '<div class="ava"><svg width="16" height="16" viewBox="0 0 40 40"><path d="M20 4 L23.9 16.1 L36 20 L23.9 23.9 L20 36 L16.1 23.9 L4 20 L16.1 16.1 Z" fill="#c2922e"/></svg></div>';
+        wrap.innerHTML = ava + '<div class="body">' + html + "</div>";
+        messages.appendChild(wrap);
+        messages.scrollTop = messages.scrollHeight;
+        return wrap;
+      }
+      function streamInto(el, text) {
+        el.textContent = "";
+        const parts = text.split(/(\s+)/); let i = 0;
+        return new Promise((resolve) => {
+          const t = setInterval(() => {
+            el.textContent += parts[i++] || "";
+            messages.scrollTop = messages.scrollHeight;
+            if (i >= parts.length) { clearInterval(t); resolve(); }
+          }, 16);
+        });
+      }
+
+      const convo = [];
+      $("composer").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+        addMessage("user", text.replace(/</g, "&lt;"));
+        convo.push({ role: "user", content: text });
+        input.value = ""; input.style.height = "auto";
+        const thinking = addMessage("bot", '<span class="typing"><span></span><span></span><span></span></span>');
+        const body = thinking.querySelector(".body");
+        let reply;
+        try {
+          const res = await fetch(API + "/v1/chat", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages: convo, tier: tier, search: searchOn }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error();
+          reply = data.reply || "(no response)";
+        } catch (err) {
+          reply = "I'm not connected to my brain yet — once the AI service is live, I'll answer for real. (You're seeing the chat experience.)";
+        }
+        convo.push({ role: "assistant", content: reply });
+        await streamInto(body, reply);
+      });
+
+      $("newChat").onclick = () => location.reload();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sevoria — a sharper, more honest AI assistant</title>
+    <meta name="description" content="Sevoria is a sharp, honest AI assistant for the things you actually do — writing, thinking, learning, getting unstuck." />
+    <link rel="stylesheet" href="assets/styles.css" />
+    <style>
+      .lx-hero { max-width: var(--maxw); margin: 0 auto; padding: 60px 24px 80px; display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 60px; align-items: center; }
+      .lx-kicker { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; letter-spacing: 0.4px; color: var(--brass-deep); margin: 0 0 22px; }
+      .lx-kicker::before { content: ""; width: 26px; height: 1px; background: var(--brass); }
+      .lx-h1 { font-family: "Fraunces", serif; font-weight: 500; font-size: clamp(46px, 6.4vw, 82px); line-height: 0.98; letter-spacing: -0.015em; margin: 0; color: var(--text); }
+      .lx-h1 em { font-style: italic; color: var(--brass); }
+      .lx-sub { font-size: 19px; line-height: 1.6; color: var(--text-mut); max-width: 44ch; margin: 24px 0 32px; }
+      .lx-cta { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+      .lx-textlink { color: var(--text); font-weight: 500; text-decoration: none; border-bottom: 1.5px solid var(--brass); padding-bottom: 2px; }
+      .lx-textlink:hover { color: var(--brass-deep); }
+      .lx-meta { font-size: 13px; color: var(--text-mut); margin: 26px 0 0; }
+
+      .lx-chat { background: var(--ink); border-radius: 16px; padding: 20px; box-shadow: 0 24px 50px -28px rgba(22, 24, 29, 0.55); }
+      .lx-chat-head { display: flex; align-items: center; gap: 9px; padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px solid rgba(236, 231, 219, 0.1); color: var(--on-ink); font-family: "Fraunces", serif; font-size: 16px; }
+      .lx-msg { font-size: 14.5px; line-height: 1.55; border-radius: 13px; padding: 11px 14px; margin-bottom: 11px; max-width: 90%; }
+      .lx-user { background: rgba(236, 231, 219, 0.1); color: var(--on-ink); margin-left: auto; border-bottom-right-radius: 4px; }
+      .lx-bot { background: rgba(194, 146, 46, 0.16); color: #f1e7d4; border-bottom-left-radius: 4px; }
+      .lx-flag { display: block; margin-top: 9px; font-size: 12.5px; color: var(--on-ink-mut); font-style: italic; }
+
+      .lx-manifesto { background: var(--ink); color: var(--on-ink); padding: 84px 24px; }
+      .lx-quote { max-width: 900px; margin: 0 auto; font-family: "Fraunces", serif; font-weight: 500; font-size: clamp(28px, 4.6vw, 52px); line-height: 1.1; letter-spacing: -0.01em; }
+      .lx-quote .brass { color: var(--brass); }
+
+      .lx-uses { max-width: var(--maxw); margin: 0 auto; padding: 84px 24px; }
+      .lx-h2 { font-family: "Fraunces", serif; font-weight: 500; font-size: clamp(28px, 3.6vw, 42px); letter-spacing: -0.01em; max-width: 18ch; margin: 0 0 36px; }
+      .lx-use { display: grid; grid-template-columns: 60px 1fr; gap: 22px; padding: 30px 0; border-top: 1px solid var(--line); align-items: baseline; }
+      .lx-use:last-child { border-bottom: 1px solid var(--line); }
+      .lx-num { font-family: "Fraunces", serif; font-size: 22px; color: var(--brass-deep); }
+      .lx-use h3 { font-size: 22px; margin: 0 0 7px; letter-spacing: -0.01em; }
+      .lx-use p { margin: 0; color: var(--text-mut); font-size: 16.5px; line-height: 1.6; max-width: 56ch; }
+
+      .lx-close { text-align: center; padding: 96px 24px 100px; }
+      .lx-close h2 { font-family: "Fraunces", serif; font-style: italic; font-weight: 500; font-size: clamp(44px, 6.5vw, 78px); letter-spacing: -0.02em; margin: 0 0 30px; }
+
+      @media (max-width: 900px) {
+        .lx-hero { grid-template-columns: 1fr; gap: 40px; padding: 40px 24px 60px; }
+        .lx-manifesto, .lx-uses { padding: 60px 24px; }
+        .lx-close { padding: 70px 24px 80px; }
+      }
+      @media (max-width: 560px) {
+        .lx-use { grid-template-columns: 1fr; gap: 4px; }
+        .lx-cta { gap: 16px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html">
+        <svg width="30" height="30" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="#6b7280" stroke-width="1.2" opacity="0.5"/><path d="M20 4 L23.9 16.1 L36 20 L23.9 23.9 L20 36 L16.1 23.9 L4 20 L16.1 16.1 Z" fill="#c2922e"/></svg>
+        <span class="brand-name">Sevoria</span>
+      </a>
+      <nav class="nav">
+        <a href="#uses">What it does</a>
+        <a href="about.html">About</a>
+        <a href="help.html">Help</a>
+      </nav>
+      <div class="nav-cta">
+        <a class="btn btn-ghost" href="login.html">Sign in</a>
+        <a class="btn btn-primary" href="login.html">Get started</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="lx-hero">
+        <div>
+          <p class="lx-kicker">A sharper kind of assistant</p>
+          <h1 class="lx-h1">Ask anything.<br /><em>Find your way.</em></h1>
+          <p class="lx-sub">Sevoria is an AI assistant with a spine — it gets to the point, pushes back when you're wrong, and tells you straight when it isn't sure.</p>
+          <div class="lx-cta">
+            <a class="btn btn-primary btn-lg" href="login.html">Get started</a>
+            <a class="lx-textlink" href="#uses">See what it's for</a>
+          </div>
+          <p class="lx-meta">Sharp, honest, and yours.</p>
+        </div>
+        <div class="lx-chat" aria-hidden="true">
+          <div class="lx-chat-head">
+            <svg width="20" height="20" viewBox="0 0 40 40"><path d="M20 4 L23.9 16.1 L36 20 L23.9 23.9 L20 36 L16.1 23.9 L4 20 L16.1 16.1 Z" fill="#c2922e"/></svg>
+            Sevoria
+          </div>
+          <div class="lx-msg lx-user">Is my plan to launch Friday realistic? I still have testing left.</div>
+          <div class="lx-msg lx-bot">Honestly? Tight, not crazy. The risk is testing — if you find one real bug Thursday, Friday's gone. Want a cutline of what to test first vs. what can wait?<span class="lx-flag">I'd rather flag the risk now than agree and let it bite you.</span></div>
+        </div>
+      </section>
+
+      <section class="lx-manifesto">
+        <p class="lx-quote">Most assistants try to sound smart.<br /><span class="brass">Sevoria tries to be useful.</span></p>
+      </section>
+
+      <section id="uses" class="lx-uses">
+        <h2 class="lx-h2">What people actually use it for</h2>
+        <div class="lx-use">
+          <span class="lx-num">01</span>
+          <div>
+            <h3>Writing that doesn't sound like a robot</h3>
+            <p>Emails, posts, essays, the reply you've rewritten five times. Tell it the gist; it finds your voice, not a template's.</p>
+          </div>
+        </div>
+        <div class="lx-use">
+          <span class="lx-num">02</span>
+          <div>
+            <h3>Thinking something through</h3>
+            <p>Stuck on a decision or a problem? Talk it out. Sevoria asks the awkward question instead of just agreeing with you.</p>
+          </div>
+        </div>
+        <div class="lx-use">
+          <span class="lx-num">03</span>
+          <div>
+            <h3>Learning the hard stuff</h3>
+            <p>Ask it to explain anything at the level you're actually at — no jargon wall, no talking down to you.</p>
+          </div>
+        </div>
+        <div class="lx-use">
+          <span class="lx-num">04</span>
+          <div>
+            <h3>Getting unstuck, fast</h3>
+            <p>A blank page, a bug you can't crack, a plan you can't start. Bring the mess; leave with a first move.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="lx-close">
+        <h2>Find your way.</h2>
+        <a class="btn btn-primary btn-lg" href="login.html">Get started</a>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <div class="brand">
+            <svg width="28" height="28" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="#6b7280" stroke-width="1.2" opacity="0.6"/><path d="M20 4 L23.9 16.1 L36 20 L23.9 23.9 L20 36 L16.1 23.9 L4 20 L16.1 16.1 Z" fill="#c2922e"/></svg>
+            <span class="brand-name">Sevoria</span>
+          </div>
+          <p>Find your way, with Sevoria.</p>
+        </div>
+        <div class="footer-cols">
+          <div><h4>Product</h4><a href="index.html#uses">What it does</a><a href="chat.html">Chat</a><a href="login.html">Sign in</a></div>
+          <div><h4>Company</h4><a href="about.html">About</a><a href="contact.html">Contact</a></div>
+          <div><h4>Legal</h4><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="acceptable-use.html">Acceptable use</a></div>
+          <div><h4>Support</h4><a href="help.html">Help &amp; FAQ</a><a href="contact.html">Contact us</a></div>
+        </div>
+      </div>
+      <div class="footer-base"><span>© 2026 Sevoria</span><span>A sharp, honest AI assistant.</span></div>
+    </footer>
+  </body>
+</html>
