@@ -1,0 +1,45 @@
+<!-- Sevoria — branded verification email (6-digit code).
+     Paste this into Supabase → Authentication → Email Templates for BOTH
+     "Confirm signup" and "Magic Link". Keep {{ .Token }} exactly as-is —
+     that is what renders the 6-digit code (instead of a magic link).
+     Suggested subjects:
+       Confirm signup → "Your Sevoria code: {{ .Token }}"
+       Magic Link     → "Your Sevoria sign-in code: {{ .Token }}"
+-->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3eee4;margin:0;padding:32px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:460px;background:#ffffff;border:1px solid #e7e0d2;border-radius:18px;overflow:hidden;">
+        <!-- header band -->
+        <tr>
+          <td style="background:#16181d;padding:26px 32px;">
+            <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+              <td style="vertical-align:middle;padding-right:9px;font-size:24px;line-height:1;color:#c2922e;">&#10022;</td>
+              <td style="vertical-align:middle;font-family:Georgia,'Times New Roman',serif;font-size:22px;color:#f3eee4;letter-spacing:.3px;">Sevoria</td>
+            </tr></table>
+          </td>
+        </tr>
+        <!-- body -->
+        <tr>
+          <td style="padding:34px 32px 14px;">
+            <h1 style="margin:0 0 10px;font-size:21px;color:#1f2024;font-family:Georgia,'Times New Roman',serif;font-weight:normal;">Confirm it's you</h1>
+            <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#5f5e57;">Enter this code back in Sevoria to finish signing in. It keeps your account yours.</p>
+            <!-- code box -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+              <td align="center" style="background:#faf7f1;border:1px solid #e7e0d2;border-radius:14px;padding:22px 0;">
+                <div style="font-family:'SF Mono',Menlo,Consolas,monospace;font-size:38px;font-weight:700;letter-spacing:12px;color:#16181d;padding-left:12px;">{{ .Token }}</div>
+              </td>
+            </tr></table>
+            <p style="margin:22px 0 0;font-size:13px;line-height:1.6;color:#8a887f;">This code expires shortly. If you didn't request it, you can safely ignore this email — nothing will happen.</p>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td style="padding:22px 32px 30px;border-top:1px solid #f0ebe0;">
+            <p style="margin:0;font-size:12px;line-height:1.6;color:#a8a499;">Sevoria · a sharp, honest AI assistant.<br/>Never share this code. We will never ask you for it.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

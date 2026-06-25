@@ -15,31 +15,39 @@
       html, body { height: 100%; }
       body { margin: 0; font-family: "Hanken Grotesk", system-ui, sans-serif; color: var(--on-bone); background: var(--bone); -webkit-font-smoothing: antialiased; }
       .wrap { display: grid; grid-template-columns: 1.05fr 1fr; min-height: 100vh; }
-      .brand-panel { background: var(--ink); color: var(--on-ink); padding: 48px 56px; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
-      .lockup { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+      .brand-panel { background: var(--ink); color: var(--on-ink); padding: 48px 56px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+      .brand-panel::after { content: ""; position: absolute; right: -120px; bottom: -120px; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, rgba(194,146,46,0.16), transparent 70%); }
+      .lockup { display: flex; align-items: center; gap: 12px; text-decoration: none; position: relative; z-index: 1; }
       .wordmark { font-family: "Fraunces", serif; font-weight: 500; font-size: 26px; letter-spacing: 0.3px; color: var(--on-ink); }
-      .hero { max-width: 32ch; }
+      .hero { max-width: 32ch; position: relative; z-index: 1; }
       .hero h1 { font-family: "Fraunces", serif; font-weight: 500; font-size: clamp(34px, 4vw, 50px); line-height: 1.04; margin: 0 0 18px; color: var(--on-ink); }
       .hero h1 em { font-style: italic; color: var(--brass); }
       .hero p { font-size: 17px; line-height: 1.6; color: var(--on-ink-mut); margin: 0; }
-      .points { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+      .points { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; position: relative; z-index: 1; }
       .points li { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--on-ink-mut); }
       .points .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brass); flex: none; }
+
       .panel { padding: 40px 56px; display: flex; align-items: center; justify-content: center; }
-      .form { width: 100%; max-width: 360px; }
+      .card { width: 100%; max-width: 372px; }
       .eyebrow { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--brass-deep); margin: 0 0 10px; font-weight: 600; }
-      .form h2 { font-family: "Fraunces", serif; font-weight: 500; font-size: 30px; margin: 0 0 6px; color: var(--on-bone); }
-      .form .sub { margin: 0 0 24px; color: var(--on-bone-mut); font-size: 15px; }
-      .social { display: grid; gap: 10px; margin-bottom: 22px; }
+      .card h2 { font-family: "Fraunces", serif; font-weight: 500; font-size: 30px; margin: 0 0 6px; color: var(--on-bone); }
+      .card .sub { margin: 0 0 24px; color: var(--on-bone-mut); font-size: 15px; line-height: 1.5; }
+      .card .sub b { color: var(--on-bone); font-weight: 600; }
+
+      .social { display: grid; gap: 10px; margin-bottom: 12px; }
       .soc { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; font: inherit; font-size: 15px; font-weight: 500; color: var(--on-bone); background: var(--bone-card); border: 1px solid var(--line-bone); border-radius: 10px; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
       .soc:hover { background: #fff; border-color: rgba(31,32,36,0.28); }
-      .divider { display: flex; align-items: center; gap: 14px; margin: 0 0 22px; color: var(--on-bone-mut); font-size: 13px; }
+      .soc-note { font-size: 12px; color: var(--on-bone-mut); text-align: center; margin: 0 0 16px; line-height: 1.5; }
+      .soc-note a { color: var(--brass-deep); text-decoration: underline; text-underline-offset: 2px; }
+      .divider { display: flex; align-items: center; gap: 14px; margin: 0 0 20px; color: var(--on-bone-mut); font-size: 13px; }
       .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line-bone); }
+
       label { display: block; font-size: 13px; font-weight: 500; margin: 0 0 7px; color: var(--on-bone); }
       .field { margin-bottom: 18px; }
       input { width: 100%; padding: 13px 14px; font: inherit; font-size: 15px; color: var(--on-bone); background: var(--bone-card); border: 1px solid var(--line-bone); border-radius: 10px; transition: border-color 0.15s, box-shadow 0.15s; }
       input::placeholder { color: #a8a499; }
       input:focus { outline: none; border-color: var(--brass); box-shadow: 0 0 0 3px rgba(194, 146, 46, 0.18); }
+      .code-input { text-align: center; font-size: 26px; letter-spacing: 12px; font-weight: 600; padding: 14px 14px 14px 26px; font-family: "Fraunces", serif; }
       .pw-wrap { position: relative; }
       .pw-wrap input { padding-right: 44px; }
       .pw-eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--on-bone-mut); padding: 7px; display: flex; border-radius: 8px; }
@@ -49,21 +57,39 @@
       .pw-reqs li::before { content: ""; width: 15px; height: 15px; border: 1.5px solid var(--line-bone); border-radius: 50%; flex: none; }
       .pw-reqs li.ok { color: var(--on-bone); }
       .pw-reqs li.ok::before { content: "✓"; border-color: var(--brass); background: var(--brass); color: #fff; font-size: 10px; line-height: 1; display: flex; align-items: center; justify-content: center; }
-      .cta { width: 100%; padding: 13px; margin-top: 4px; font: inherit; font-weight: 600; font-size: 15px; color: #fff; background: var(--ink); border: none; border-radius: 10px; cursor: pointer; transition: background 0.15s, transform 0.05s; }
+
+      .cta { width: 100%; padding: 13px; margin-top: 4px; font: inherit; font-weight: 600; font-size: 15px; color: #fff; background: var(--ink); border: none; border-radius: 10px; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 9px; }
       .cta:hover { background: #000; }
-      .cta:disabled { opacity: 0.5; cursor: default; }
+      .cta:disabled { opacity: 0.55; cursor: default; }
+      .spin { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      .terms-note { font-size: 12px; color: var(--on-bone-mut); line-height: 1.55; margin: 0 0 4px; }
+      .terms-note a { color: var(--brass-deep); text-decoration: underline; text-underline-offset: 2px; }
       .msg { min-height: 1.2em; margin: 14px 0 0; font-size: 14px; text-align: center; }
       .msg.err { color: #a32d2d; }
       .msg.ok { color: var(--brass-deep); }
-      .alt { margin: 18px 0 0; font-size: 14px; color: var(--on-bone-mut); text-align: center; }
-      .alt button { background: none; border: none; padding: 0; cursor: pointer; font: inherit; font-weight: 600; color: var(--brass-deep); text-decoration: underline; text-underline-offset: 2px; }
-      .foot { margin-top: 24px; font-size: 12px; line-height: 1.6; color: var(--on-bone-mut); text-align: center; }
+      .ministep { margin: 16px 0 0; font-size: 13.5px; color: var(--on-bone-mut); text-align: center; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+      .ministep button, .alt button { background: none; border: none; padding: 0; cursor: pointer; font: inherit; font-weight: 600; color: var(--brass-deep); text-decoration: underline; text-underline-offset: 2px; }
+      .ministep .sep { color: var(--line-bone); text-decoration: none; cursor: default; }
+      .alt { margin: 20px 0 0; font-size: 14px; color: var(--on-bone-mut); text-align: center; }
+      .foot { margin-top: 22px; font-size: 12px; line-height: 1.6; color: var(--on-bone-mut); text-align: center; }
       .foot a { color: var(--brass-deep); text-decoration: underline; }
+
+      /* skeleton while the session check runs */
+      .lskel { display: grid; gap: 14px; }
+      .lskel[hidden] { display: none; }
+      .sk { border-radius: 10px; background: linear-gradient(90deg, rgba(31,32,36,0.05) 0%, rgba(31,32,36,0.11) 50%, rgba(31,32,36,0.05) 100%); background-size: 200% 100%; animation: sh 1.2s infinite; }
+      @keyframes sh { 0% { background-position: 180% 0; } 100% { background-position: -180% 0; } }
+
       @media (max-width: 820px) {
         .wrap { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-        .brand-panel { flex-direction: row; align-items: center; justify-content: center; padding: 18px; }
+        .brand-panel { flex-direction: row; align-items: center; justify-content: center; padding: 16px; }
+        .brand-panel::after { display: none; }
         .brand-panel .hero, .brand-panel .points { display: none; }
-        .panel { padding: 30px 26px 46px; }
+        .panel { padding: 28px 22px 44px; align-items: flex-start; }
+        .card { max-width: 420px; }
+        .card h2 { font-size: 27px; }
       }
     </style>
   </head>
@@ -86,47 +112,114 @@
       </section>
 
       <section class="panel">
-        <form class="form" id="form">
-          <p class="eyebrow" id="eyebrow">Welcome back</p>
-          <h2 id="title">Sign in to Sevoria</h2>
-          <p class="sub" id="sub">Pick up the conversation where you left off.</p>
+        <div class="card">
+          <!-- skeleton shown until the session check resolves -->
+          <div class="lskel" id="loading">
+            <div class="sk" style="height:14px;width:40%"></div>
+            <div class="sk" style="height:30px;width:75%"></div>
+            <div class="sk" style="height:46px;margin-top:10px"></div>
+            <div class="sk" style="height:46px"></div>
+            <div class="sk" style="height:14px;width:55%;margin:2px auto 0"></div>
+          </div>
 
-          <div class="social">
-            <button type="button" class="soc" data-provider="google">
-              <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-              Continue with Google
-            </button>
-          </div>
-          <div class="divider">or</div>
+          <form id="form" hidden>
+            <p class="eyebrow" id="eyebrow">Welcome back</p>
+            <h2 id="title">Sign in to Sevoria</h2>
+            <p class="sub" id="sub">Enter your email to continue.</p>
 
-          <div class="field" id="name-field" hidden>
-            <label for="name">Name</label>
-            <input id="name" type="text" placeholder="What should we call you?" autocomplete="name" />
-          </div>
-          <div class="field">
-            <label for="email">Email</label>
-            <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
-          </div>
-          <div class="field">
-            <label for="password">Password</label>
-            <div class="pw-wrap">
-              <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
-              <button type="button" class="pw-eye" id="pwEye" aria-label="Show password">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-              </button>
+            <!-- social (email + signup steps only) -->
+            <div id="socialBlock">
+              <div class="social">
+                <button type="button" class="soc" data-provider="google">
+                  <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                  Continue with Google
+                </button>
+                <button type="button" class="soc" data-provider="github">
+                  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="#1f2024"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.4-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17 4.6 18 4.9 18 4.9c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+                  Continue with GitHub
+                </button>
+              </div>
+              <p class="soc-note">By continuing with a provider you agree to our <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy Policy</a>.</p>
+              <div class="divider">or</div>
             </div>
-            <ul class="pw-reqs" id="pwReqs" hidden>
-              <li data-req="len">At least 8 characters</li>
-              <li data-req="letter">A letter</li>
-              <li data-req="num">A number</li>
-            </ul>
-          </div>
 
-          <button class="cta" id="cta" type="submit">Continue</button>
-          <p class="msg" id="msg"></p>
-          <p class="alt" id="alt"><span id="alt-text">New here?</span> <button type="button" id="toggle">Create an account</button></p>
-          <p class="foot">By continuing you agree to our <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</p>
-        </form>
+            <!-- STEP: email (sign in) -->
+            <div class="step" id="step-email">
+              <div class="field">
+                <label for="email">Email</label>
+                <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
+              </div>
+              <button class="cta" id="emailContinue" type="submit"><span class="lbl">Continue</span></button>
+            </div>
+
+            <!-- STEP: create account -->
+            <div class="step" id="step-signup" hidden>
+              <div class="field">
+                <label for="name">Name</label>
+                <input id="name" type="text" placeholder="What should we call you?" autocomplete="name" />
+              </div>
+              <div class="field">
+                <label for="suEmail">Email</label>
+                <input id="suEmail" type="email" placeholder="you@example.com" autocomplete="email" />
+              </div>
+              <div class="field">
+                <label for="suPw">Password</label>
+                <div class="pw-wrap">
+                  <input id="suPw" type="password" placeholder="••••••••" autocomplete="new-password" />
+                  <button type="button" class="pw-eye" id="pwEye" aria-label="Show password">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+                <ul class="pw-reqs" id="pwReqs">
+                  <li data-req="len">At least 8 characters</li>
+                  <li data-req="letter">A letter</li>
+                  <li data-req="num">A number</li>
+                </ul>
+              </div>
+              <p class="terms-note">By creating an account you agree to our <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>. Sevoria collects your email, name, chat content, and usage data to provide and improve the service — we don't sell or share your data, and we don't run ads.</p>
+              <button class="cta" id="signupBtn" type="submit"><span class="lbl">Create account</span></button>
+            </div>
+
+            <!-- STEP: code -->
+            <div class="step" id="step-code" hidden>
+              <div class="field">
+                <label for="code">Verification code</label>
+                <input id="code" class="code-input" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="one-time-code" />
+              </div>
+              <button class="cta" id="verifyBtn" type="submit"><span class="lbl">Verify &amp; continue</span></button>
+              <p class="ministep">
+                <button type="button" id="resend">Resend code</button>
+                <span class="sep">·</span>
+                <button type="button" id="useDiff">Use a different email</button>
+              </p>
+              <p class="ministep" id="usePwRow">
+                <button type="button" id="usePw">Use your password instead</button>
+              </p>
+            </div>
+
+            <!-- STEP: password -->
+            <div class="step" id="step-pw" hidden>
+              <div class="field">
+                <label for="pw">Password</label>
+                <div class="pw-wrap">
+                  <input id="pw" type="password" placeholder="••••••••" autocomplete="current-password" />
+                  <button type="button" class="pw-eye" id="pwEye2" aria-label="Show password">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+              </div>
+              <button class="cta" id="pwBtn" type="submit"><span class="lbl">Sign in</span></button>
+              <p class="ministep">
+                <button type="button" id="codeInstead">Email me a code instead</button>
+                <span class="sep">·</span>
+                <button type="button" id="useDiff2">Use a different email</button>
+              </p>
+            </div>
+
+            <p class="msg" id="msg"></p>
+            <p class="alt" id="alt"><span id="alt-text">New here?</span> <button type="button" id="toggle">Create an account</button></p>
+          </form>
+        </div>
       </section>
     </main>
 
@@ -134,82 +227,161 @@
       const sb = window.sb;
       const $ = (id) => document.getElementById(id);
       const msg = (t, ok) => { const m = $("msg"); m.textContent = t || ""; m.className = "msg " + (ok ? "ok" : "err"); };
-      let mode = "signin";
 
-      sb.auth.getSession().then(({ data }) => { if (data.session) location.href = "chat.html"; });
+      let step = "email";          // email | signup | code | pw
+      let currentEmail = "";        // email the code/password applies to
+      let verifyType = "email";     // "email" (OTP sign-in) | "signup" (confirm new account)
 
-      // Show / hide password
-      $("pwEye").addEventListener("click", () => {
-        const p = $("password");
+      const redirectTo = location.origin + location.pathname.replace("login.html", "chat.html");
+
+      // ---- session gate (skeleton until resolved) ----
+      sb.auth.getSession().then(({ data }) => {
+        if (data.session) { location.href = "chat.html"; return; }
+        $("loading").hidden = true;
+        $("form").hidden = false;
+        $("email").focus();
+      });
+
+      // ---- step machine ----
+      const HEAD = {
+        email:  ["Welcome back", "Sign in to Sevoria", "Enter your email to continue."],
+        signup: ["Get started", "Create your account", "A minute to set up — then it's just you and Sevoria."],
+        code:   ["Check your email", "Enter your code", null],
+        pw:     ["Welcome back", "Enter your password", null],
+      };
+      function setStep(name) {
+        step = name;
+        document.querySelectorAll(".step").forEach((s) => (s.hidden = s.id !== "step-" + name));
+        $("socialBlock").hidden = !(name === "email" || name === "signup");
+        $("alt").hidden = !(name === "email" || name === "signup");
+        const h = HEAD[name];
+        $("eyebrow").textContent = h[0];
+        $("title").textContent = h[1];
+        if (h[2] !== null) $("sub").innerHTML = h[2];
+        msg("");
+        if (name === "code") { $("usePwRow").hidden = verifyType === "signup"; setTimeout(() => $("code").focus(), 30); }
+        if (name === "pw") setTimeout(() => $("pw").focus(), 30);
+        if (name === "email") setTimeout(() => $("email").focus(), 30);
+      }
+
+      function busy(btn, on, label) {
+        btn.disabled = on;
+        btn.querySelector(".lbl").innerHTML = on ? '<span class="spin"></span>' : label;
+      }
+      const validEmail = (e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
+
+      // ---- show / hide password (both fields) ----
+      document.querySelectorAll(".pw-eye").forEach((eye) => eye.addEventListener("click", () => {
+        const p = eye.parentElement.querySelector("input");
         const show = p.type === "password";
         p.type = show ? "text" : "password";
-        $("pwEye").setAttribute("aria-label", show ? "Hide password" : "Show password");
-      });
+        eye.setAttribute("aria-label", show ? "Hide password" : "Show password");
+      }));
 
-      // Live password requirements (signup only)
+      // ---- live password rules (signup) ----
       const reqs = { len: (v) => v.length >= 8, letter: (v) => /[a-zA-Z]/.test(v), num: (v) => /\d/.test(v) };
-      function checkPw() {
-        const v = $("password").value;
-        let allOk = true;
-        document.querySelectorAll("#pwReqs li").forEach((li) => {
-          const ok = reqs[li.dataset.req](v);
-          li.classList.toggle("ok", ok);
-          if (!ok) allOk = false;
-        });
-        if (mode === "signup") $("cta").disabled = !allOk || !$("email").value.trim();
-        return allOk;
+      function pwOk() {
+        const v = $("suPw").value; let all = true;
+        document.querySelectorAll("#pwReqs li").forEach((li) => { const ok = reqs[li.dataset.req](v); li.classList.toggle("ok", ok); if (!ok) all = false; });
+        return all;
       }
-      $("password").addEventListener("input", () => { if (mode === "signup") checkPw(); });
-      $("email").addEventListener("input", () => { if (mode === "signup") checkPw(); });
+      $("suPw").addEventListener("input", pwOk);
 
-      $("toggle").addEventListener("click", () => {
-        mode = mode === "signin" ? "signup" : "signin";
-        const up = mode === "signup";
-        $("eyebrow").textContent = up ? "Get started" : "Welcome back";
-        $("title").textContent = up ? "Create your account" : "Sign in to Sevoria";
-        $("sub").textContent = up ? "A minute to set up. Then it's just you and Sevoria." : "Pick up the conversation where you left off.";
-        $("cta").textContent = up ? "Create account" : "Continue";
-        $("alt-text").textContent = up ? "Already have an account?" : "New here?";
-        $("toggle").textContent = up ? "Sign in" : "Create an account";
-        $("password").setAttribute("autocomplete", up ? "new-password" : "current-password");
-        $("name-field").hidden = !up;
-        $("pwReqs").hidden = !up;
-        msg("");
-        $("cta").disabled = up ? !checkPw() : false;
-      });
-
-      // Google (and any other) social sign-in
+      // ---- social ----
       document.querySelectorAll(".soc").forEach((b) => b.addEventListener("click", async () => {
-        const { error } = await sb.auth.signInWithOAuth({
-          provider: b.dataset.provider,
-          options: { redirectTo: location.origin + location.pathname.replace("login.html", "chat.html") },
-        });
+        const { error } = await sb.auth.signInWithOAuth({ provider: b.dataset.provider, options: { redirectTo } });
         if (error) msg(error.message);
       }));
 
-      // Email / password
-      $("form").addEventListener("submit", async (e) => {
-        e.preventDefault();
+      // ---- actions ----
+      async function sendCode(email) {
+        const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: redirectTo } });
+        return error;
+      }
+
+      async function continueEmail() {
         const email = $("email").value.trim();
-        const password = $("password").value;
-        const name = $("name").value.trim();
-        if (!email || !password) return msg("Enter your email and password.");
-        if (mode === "signup" && !checkPw()) return msg("Please meet the password requirements above.");
-        $("cta").disabled = true;
-        try {
-          if (mode === "signup") {
-            const { data, error } = await sb.auth.signUp({ email, password, options: { data: { name } } });
-            if (error) return msg(error.message);
-            if (data.session) location.href = "chat.html";
-            else msg("Almost there — check your email to confirm, then sign in.", true);
-          } else {
-            const { error } = await sb.auth.signInWithPassword({ email, password });
-            if (error) return msg(error.message);
-            location.href = "chat.html";
-          }
-        } finally {
-          $("cta").disabled = mode === "signup" ? !checkPw() : false;
+        if (!validEmail(email)) return msg("Enter a valid email address.");
+        busy($("emailContinue"), true);
+        const error = await sendCode(email);
+        busy($("emailContinue"), false, "Continue");
+        if (error) {
+          if (/not allowed|signups not allowed|not found/i.test(error.message))
+            return msg("No account found for that email. Create one below.");
+          return msg(error.message);
         }
+        currentEmail = email; verifyType = "email";
+        setStep("code");
+      }
+
+      async function verifyCode() {
+        const token = $("code").value.trim();
+        if (token.length < 6) return msg("Enter the 6-digit code.");
+        busy($("verifyBtn"), true);
+        const { error } = await sb.auth.verifyOtp({ email: currentEmail, token, type: verifyType });
+        if (error) { busy($("verifyBtn"), false, "Verify &amp; continue"); return msg("That code didn't match or has expired. Try again or resend."); }
+        location.href = "chat.html";
+      }
+
+      async function passwordSignin() {
+        const password = $("pw").value;
+        if (!password) return msg("Enter your password.");
+        busy($("pwBtn"), true);
+        const { error } = await sb.auth.signInWithPassword({ email: currentEmail, password });
+        if (error) { busy($("pwBtn"), false, "Sign in"); return msg(error.message); }
+        location.href = "chat.html";
+      }
+
+      async function createAccount() {
+        const name = $("name").value.trim();
+        const email = $("suEmail").value.trim();
+        const password = $("suPw").value;
+        if (!name) return msg("What should we call you?");
+        if (!validEmail(email)) return msg("Enter a valid email address.");
+        if (!pwOk()) return msg("Please meet the password requirements above.");
+        busy($("signupBtn"), true);
+        const { data, error } = await sb.auth.signUp({ email, password, options: { data: { name }, emailRedirectTo: redirectTo } });
+        busy($("signupBtn"), false, "Create account");
+        if (error) return msg(error.message);
+        if (data.session) { location.href = "chat.html"; return; }
+        currentEmail = email; verifyType = "signup";
+        setStep("code");
+        msg("We emailed a 6-digit code to confirm your account.", true);
+      }
+
+      // ---- routing: form submit (Enter) + buttons ----
+      $("form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (step === "email") continueEmail();
+        else if (step === "signup") createAccount();
+        else if (step === "code") verifyCode();
+        else if (step === "pw") passwordSignin();
+      });
+
+      $("resend").addEventListener("click", async () => {
+        msg("");
+        let error;
+        if (verifyType === "signup") ({ error } = await sb.auth.resend({ type: "signup", email: currentEmail }));
+        else error = await sendCode(currentEmail);
+        msg(error ? error.message : "A fresh code is on its way.", !error);
+      });
+      $("usePw").addEventListener("click", () => setStep("pw"));
+      $("codeInstead").addEventListener("click", async () => { verifyType = "email"; const err = await sendCode(currentEmail); setStep("code"); msg(err ? err.message : "Code sent — check your email.", !err); });
+      $("useDiff").addEventListener("click", () => setStep("email"));
+      $("useDiff2").addEventListener("click", () => setStep("email"));
+
+      // sub line shows the target email on code/pw steps
+      const origSetStep = setStep;
+      setStep = function (name) {
+        origSetStep(name);
+        if (name === "code") $("sub").innerHTML = "We sent a 6-digit code to <b>" + currentEmail.replace(/</g, "&lt;") + "</b>.";
+        if (name === "pw") $("sub").innerHTML = "Signing in as <b>" + currentEmail.replace(/</g, "&lt;") + "</b>.";
+      };
+
+      // ---- bottom toggle: sign in <-> create account ----
+      $("toggle").addEventListener("click", () => {
+        if (step === "signup") { setStep("email"); $("alt-text").textContent = "New here?"; $("toggle").textContent = "Create an account"; }
+        else { setStep("signup"); $("alt-text").textContent = "Already have an account?"; $("toggle").textContent = "Sign in"; }
       });
     </script>
   </body>

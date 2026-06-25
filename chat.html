@@ -33,8 +33,13 @@
       .newchat { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px; border-radius: var(--r2); border: none; background: var(--brass); color: #1c1407; font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; transition: .15s; }
       .newchat:hover { background: var(--brass-deep); }
       .convo-list { flex: 1; overflow: auto; display: flex; flex-direction: column; gap: 4px; min-height: 0; padding: 2px; }
-      .convo { padding: 9px 12px; border-radius: var(--r1); color: var(--on-ink); font-size: 14px; cursor: pointer; opacity: .82; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .convo { display: flex; align-items: center; gap: 4px; padding: 9px 8px 9px 12px; border-radius: var(--r1); color: var(--on-ink); font-size: 14px; cursor: pointer; opacity: .82; }
       .convo:hover { background: rgba(236,231,219,0.08); opacity: 1; }
+      .convo.active { background: rgba(236,231,219,0.13); opacity: 1; }
+      .convo-t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .convo-del { flex: none; display: flex; opacity: 0; border: none; background: none; color: var(--on-ink-mut); cursor: pointer; padding: 3px; border-radius: 6px; transition: .12s; }
+      .convo:hover .convo-del { opacity: .65; }
+      .convo-del:hover { opacity: 1; background: rgba(236,231,219,0.12); color: var(--on-ink); }
       .empty-convos { color: var(--on-ink-mut); font-size: 13px; text-align: center; padding: 30px 10px; line-height: 1.6; }
       .skel { height: 38px; border-radius: var(--r1); background: rgba(236,231,219,0.05); background-image: linear-gradient(90deg, rgba(236,231,219,0) 0%, rgba(236,231,219,0.11) 50%, rgba(236,231,219,0) 100%); background-size: 200% 100%; background-repeat: no-repeat; animation: sh 1.2s infinite; }
       @keyframes sh { 0% { background-position: 180% 0; } 100% { background-position: -180% 0; } }
@@ -58,7 +63,9 @@
       .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--r1); cursor: pointer; font-size: 14px; color: var(--text); background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
       .menu-item:hover { background: var(--card); }
       .menu-item svg { color: var(--text-mut); flex: none; }
+      #miLogout:hover, #miLogout:hover svg { color: #d7443e; }
       .menu-sep { height: 1px; background: var(--line); margin: 6px 4px; }
+      .menu-ver { text-align: center; font-size: 11px; color: var(--text-mut); padding: 8px 4px 4px; letter-spacing: .3px; }
 
       /* ---------- main ---------- */
       .main { display: flex; flex-direction: column; height: 100vh; background: var(--paper); min-width: 0; }
@@ -80,6 +87,8 @@
       .model-opt.sel .check { opacity: 1; }
       .model-opt.locked { opacity: .6; }
       .lock-tag { margin-left: auto; font-size: 11px; font-weight: 600; color: var(--brass-deep); background: rgba(194,146,46,0.14); padding: 2px 8px; border-radius: 20px; align-self: center; }
+      .lock-tag.max { color: #fff; background: var(--brass); }
+      .model-grouplab { font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--text-mut); padding: 8px 12px 4px; }
 
       .messages { flex: 1; overflow: auto; padding: 16px 0 8px; min-height: 0; }
       .empty { max-width: 640px; margin: 8vh auto 0; text-align: center; padding: 0 24px; }
@@ -134,6 +143,32 @@
       .tool-item.off .sw { background: var(--line); }
       .tool-item.off .sw::after { right: auto; left: 2px; }
 
+      /* ---------- sidebar search + collapse rail ---------- */
+      .sb-search { display: flex; align-items: center; gap: 8px; background: rgba(236,231,219,0.06); border: 1px solid rgba(236,231,219,0.12); border-radius: var(--r1); padding: 8px 11px; }
+      .sb-search svg { color: var(--on-ink-mut); flex: none; }
+      .sb-search input { flex: 1; min-width: 0; background: none; border: none; outline: none; color: var(--on-ink); font: inherit; font-size: 13px; }
+      .sb-search input::placeholder { color: var(--on-ink-mut); }
+      .sb-collapse { color: var(--on-ink-mut); }
+      .sb-collapse:hover { background: rgba(236,231,219,0.08); color: var(--on-ink); }
+      .sb-collapse .chevR { display: none; }
+      .app.collapsed { grid-template-columns: 68px 1fr; }
+      .app.collapsed .sb-brand, .app.collapsed .sb-search input, .app.collapsed .convo-list, .app.collapsed .newchat .nclbl, .app.collapsed .acct-meta, .app.collapsed .acct .chev { display: none; }
+      .app.collapsed .sb-top { justify-content: center; }
+      .app.collapsed .sidebar { padding: 14px 12px; align-items: stretch; }
+      .app.collapsed .newchat { padding: 11px 0; }
+      .app.collapsed .sb-search { justify-content: center; padding: 9px 0; cursor: pointer; }
+      .app.collapsed .acct { justify-content: center; padding: 8px 0; }
+      .app.collapsed .sb-collapse .chevL { display: none; }
+      .app.collapsed .sb-collapse .chevR { display: block; }
+
+      /* ---------- composer mic + stop ---------- */
+      .mic-btn { width: 38px; height: 38px; border-radius: var(--r1); border: none; background: none; color: var(--text-mut); cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; }
+      .mic-btn:hover { background: var(--line); color: var(--text); }
+      .mic-btn.rec { color: #d7443e; animation: micpulse 1.1s infinite; }
+      @keyframes micpulse { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
+      .send.stop { background: var(--ink); color: var(--on-ink); }
+      .send.stop:hover { background: #000; }
+
       /* ---------- modals ---------- */
       .scrim2 { position: fixed; inset: 0; background: rgba(10,11,14,0.4); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 90; padding: 22px; }
       .scrim2.open { display: flex; animation: fade .15s ease; }
@@ -178,8 +213,9 @@
 
       .scrim { display: none; }
       @media (max-width: 860px) {
-        .app { grid-template-columns: 1fr; }
+        .app, .app.collapsed { grid-template-columns: 1fr; }
         .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 286px; transform: translateX(-100%); transition: transform .25s; z-index: 80; }
+        .app.collapsed .sb-brand, .app.collapsed .sb-search input, .app.collapsed .convo-list, .app.collapsed .newchat .nclbl, .app.collapsed .acct-meta { display: revert; }
         .sidebar.open { transform: none; }
         .menu-btn { display: flex; }
         .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 75; }
@@ -198,9 +234,16 @@
             <svg width="26" height="26" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="#6b7280" stroke-width="1.2" opacity=".6"/><path d="M20 4 L23.9 16.1 L36 20 L23.9 23.9 L20 36 L16.1 23.9 L4 20 L16.1 16.1 Z" fill="#c2922e"/></svg>
             <span class="nm">Sevoria</span><span class="beta">Beta</span>
           </a>
-          <button class="icon-btn" id="closeSb" aria-label="Close" style="display:none;color:var(--on-ink-mut)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          <button class="icon-btn sb-collapse" id="collapseSb" aria-label="Collapse sidebar" title="Collapse sidebar">
+            <svg class="chevL" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            <svg class="chevR" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
         </div>
-        <button class="newchat" id="newChat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> New chat</button>
+        <button class="newchat" id="newChat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> <span class="nclbl">New chat</span></button>
+        <div class="sb-search" id="sbSearch">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+          <input id="convoSearch" type="text" placeholder="Search chats" autocomplete="off" />
+        </div>
         <div class="convo-list" id="convoList"></div>
         <div class="acct-wrap">
           <div class="acct" id="acctBtn">
@@ -216,6 +259,7 @@
             <a class="menu-item" href="help.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7M12 17h.01"/></svg> Help</a>
             <div class="menu-sep"></div>
             <button class="menu-item" id="miLogout"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 17l5-5-5-5M21 12H9M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg> Log out</button>
+            <div class="menu-ver" id="menuVer">Sevoria Beta</div>
           </div>
         </div>
       </aside>
@@ -229,9 +273,12 @@
           <div class="model-wrap">
             <button class="model-pick" id="modelBtn"><span class="dot"></span> <span id="modelLabel">Sevoria Core</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
             <div class="model-menu" id="modelMenu">
+              <div class="model-grouplab">Free</div>
               <div class="model-opt sel" data-tier="core"><div><div class="ot">Sevoria Core</div><div class="od">Fast — great for everyday questions</div></div><span class="check"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12l5 5L20 6"/></svg></span></div>
+              <div class="model-opt" data-tier="reason"><div><div class="ot">Sevoria Reason</div><div class="od">Slower, thinks harder — for tougher questions</div></div><span class="check"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12l5 5L20 6"/></svg></span></div>
+              <div class="model-grouplab">Subscription</div>
               <div class="model-opt locked" data-tier="pro"><div><div class="ot">Sevoria Pro</div><div class="od">Much smarter — for real work</div></div><span class="lock-tag">Pro</span></div>
-              <div class="model-opt locked" data-tier="max"><div><div class="ot">Sevoria Max</div><div class="od">Our most capable</div></div><span class="lock-tag">Pro</span></div>
+              <div class="model-opt locked" data-tier="max"><div><div class="ot">Sevoria Max</div><div class="od">Our most capable — great at everything</div></div><span class="lock-tag max">Max</span></div>
             </div>
           </div>
         </header>
@@ -254,7 +301,8 @@
               <div class="tool-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg> Attach files <span class="soon">soon</span></div>
             </div>
             <textarea class="chat-input" id="input" rows="1" placeholder="Message Sevoria…"></textarea>
-            <button class="send" id="send" type="submit" aria-label="Send"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            <button class="mic-btn" id="micBtn" type="button" aria-label="Dictate" title="Speak"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></button>
+            <button class="send" id="send" type="submit" aria-label="Send"><svg id="sendIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
           </form>
           <p class="composer-note">Sevoria is AI and can make mistakes — verify important info. Never share passwords, card numbers, or private keys.</p>
         </div>
@@ -376,8 +424,10 @@
     <script>
       const sb = window.sb;
       const $ = (id) => document.getElementById(id);
-      const API = "https://email-wanna-cast-ethical.trycloudflare.com"; // ← tunnel URL (ephemeral; re-point on restart)
+      const API = "https://hey-cartridge-technology-develops.trycloudflare.com"; // ← tunnel URL (ephemeral; re-point on restart)
+      const VERSION = "v0.4";
       let USER = null;
+      $("menuVer").textContent = "Sevoria " + VERSION + " · Beta";
 
       // ---- gate + user ----
       (async () => {
@@ -394,11 +444,20 @@
         $("secEmail").textContent = USER.email; $("accEmail2").textContent = USER.email; $("accName2").textContent = name;
         window._avatarHTML = pic ? '<img src="' + pic + '" alt="">' : initial;
         if (USER.email === "richyrachfansgmial@gmail.com") $("adminNav").style.display = "block";
+        loadConversations();
       })();
 
-      function openSb() { $("sidebar").classList.add("open"); $("scrim").classList.add("show"); }
+      const app = document.querySelector(".app");
+      const isMobile = () => matchMedia("(max-width: 860px)").matches;
+      function openDrawer() { $("sidebar").classList.add("open"); $("scrim").classList.add("show"); }
       function closeSb() { $("sidebar").classList.remove("open"); $("scrim").classList.remove("show"); }
-      $("openSb").onclick = openSb; $("closeSb").onclick = closeSb; $("closeSb").style.display = "flex"; $("scrim").onclick = closeSb;
+      function toggleCollapse() { app.classList.toggle("collapsed"); localStorage.setItem("ls_collapsed", app.classList.contains("collapsed") ? "1" : "0"); }
+      if (localStorage.getItem("ls_collapsed") === "1") app.classList.add("collapsed");
+      $("openSb").onclick = () => (isMobile() ? openDrawer() : toggleCollapse());
+      $("collapseSb").onclick = () => (isMobile() ? closeSb() : toggleCollapse());
+      $("scrim").onclick = closeSb;
+      // tapping the search box while collapsed re-opens the rail and focuses it
+      $("sbSearch").addEventListener("click", () => { if (app.classList.contains("collapsed")) { toggleCollapse(); setTimeout(() => $("convoSearch").focus(), 60); } });
 
       // ---- theme ----
       function applyTheme(mode) {
@@ -433,18 +492,81 @@
         document.querySelectorAll(".set-page").forEach((p) => p.classList.toggle("on", p.dataset.p === s.dataset.p));
       }));
 
-      // ---- conversation list ----
+      // ---- conversation list (saved chat history) ----
       const list = $("convoList");
+      let currentConvoId = null;
       list.innerHTML = '<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
-      setTimeout(() => { list.innerHTML = '<div class="empty-convos">No conversations yet.<br />Start one below.</div>'; }, 1000);
+
+      const esc = (s) => (s || "").replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+      function highlightActive() { document.querySelectorAll(".convo").forEach((c) => c.classList.toggle("active", c.dataset.id === currentConvoId)); }
+
+      let allConvos = [];
+      function applyConvoFilter() {
+        const q = ($("convoSearch").value || "").trim().toLowerCase();
+        const rows = q ? allConvos.filter((r) => (r.title || "").toLowerCase().includes(q)) : allConvos;
+        renderConvoList(rows, q);
+      }
+      $("convoSearch").addEventListener("input", applyConvoFilter);
+
+      function renderConvoList(rows, q) {
+        if (!rows || !rows.length) {
+          list.innerHTML = '<div class="empty-convos">' + (q ? "No chats match “" + esc(q) + "”." : "No conversations yet.<br />Start one below.") + "</div>";
+          return;
+        }
+        list.innerHTML = "";
+        rows.forEach((r) => {
+          const el = document.createElement("div");
+          el.className = "convo" + (r.id === currentConvoId ? " active" : "");
+          el.dataset.id = r.id;
+          el.innerHTML = '<span class="convo-t">' + esc(r.title || "New chat") + "</span>" +
+            '<button class="convo-del" title="Delete chat" aria-label="Delete chat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>';
+          el.querySelector(".convo-t").onclick = () => openConversation(r.id);
+          el.querySelector(".convo-del").onclick = (e) => { e.stopPropagation(); if (confirm("Delete this chat? This can't be undone.")) deleteConvo(r.id); };
+          list.appendChild(el);
+        });
+      }
+
+      async function loadConversations() {
+        const { data, error } = await sb.from("conversations").select("id,title,updated_at").order("updated_at", { ascending: false });
+        if (error) { list.innerHTML = '<div class="empty-convos">Couldn\'t load your chats.<br />Refresh to try again.</div>'; return; }
+        allConvos = data || [];
+        applyConvoFilter();
+      }
+
+      async function openConversation(id) {
+        currentConvoId = id; highlightActive(); closeSb();
+        messages.innerHTML = '<div class="empty-convos" style="color:var(--text-mut)">Loading…</div>';
+        const { data, error } = await sb.from("messages").select("role,content,created_at").eq("conversation_id", id).order("created_at", { ascending: true });
+        messages.innerHTML = ""; convo.length = 0;
+        if (error) { showError(""); return; }
+        (data || []).forEach((m) => {
+          convo.push({ role: m.role, content: m.content });
+          if (m.role === "user") addMessage("user", m.content.replace(/</g, "&lt;"));
+          else renderRich(addMessage("bot", "").querySelector(".body"), m.content);
+        });
+        const t = document.querySelector('.convo[data-id="' + id + '"] .convo-t');
+        document.querySelector(".chat-title").textContent = t ? t.textContent : "Chat";
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      async function deleteConvo(id) {
+        await sb.from("conversations").delete().eq("id", id); // messages cascade-delete
+        if (id === currentConvoId) newChat();
+        loadConversations();
+      }
 
       // ---- prompts ----
       const POOL = ["Help me plan a realistic week", "Explain a tricky idea simply", "Draft a reply I keep rewriting", "Pressure-test this decision with me", "Turn these notes into a summary", "What am I not thinking about here?", "Help me start something I'm stuck on", "Rewrite this so it sounds like me"];
-      $("chips").innerHTML = POOL.slice().sort(() => Math.random() - 0.5).slice(0, 3).map((p) => '<button class="chip">' + p + "</button>").join("");
-      document.querySelectorAll(".chip").forEach((c) => (c.onclick = () => { $("input").value = c.textContent; $("input").focus(); grow(); }));
+      function mountChips() {
+        const c = $("chips"); if (!c) return;
+        c.innerHTML = POOL.slice().sort(() => Math.random() - 0.5).slice(0, 3).map((p) => '<button class="chip">' + p + "</button>").join("");
+        document.querySelectorAll(".chip").forEach((b) => (b.onclick = () => { $("input").value = b.textContent; $("input").focus(); grow(); }));
+      }
+      mountChips();
 
       // ---- composer ----
       const input = $("input"), messages = $("messages");
+      const EMPTY_HTML = messages.innerHTML; // empty-state markup, restored on New chat
       function grow() { input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 170) + "px"; }
       input.addEventListener("input", grow);
       input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("composer").requestSubmit(); } });
@@ -510,36 +632,145 @@
         catch (e) { el.textContent = text; }
       }
 
-      // retries, then a real error (never a chatty fake reply)
-      async function tryAI(convo) {
+      // retries, then a real error (never a chatty fake reply).
+      // Returns the reply string, null on failure, or {aborted:true} if stopped.
+      async function tryAI(convo, signal) {
         for (let a = 0; a < 3; a++) {
           try {
-            const res = await fetch(API + "/v1/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: convo, tier, search: searchOn }) });
+            const res = await fetch(API + "/v1/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: convo, tier, search: searchOn }), signal });
             if (!res.ok) throw 0;
             const data = await res.json();
             if (data.error || !data.reply) throw 0;
             return data.reply;
-          } catch (e) { if (a < 2) await new Promise((r) => setTimeout(r, 1300)); }
+          } catch (e) {
+            if (e && e.name === "AbortError") return { aborted: true };
+            if (a < 2) await new Promise((r) => setTimeout(r, 1300));
+          }
         }
         return null;
       }
 
       const convo = [];
+
+      // Test mode (Settings → Account) means nothing is saved or learned.
+      function isTest() { const t = $("testMode"); return !!(t && t.checked); }
+
+      async function newConversation(firstText) {
+        const { data, error } = await sb.from("conversations").insert({ user_id: USER.id, title: firstText.slice(0, 80) }).select("id").single();
+        return error ? null : data.id;
+      }
+      async function saveMsg(role, content) {
+        if (!currentConvoId) return;
+        await sb.from("messages").insert({ conversation_id: currentConvoId, user_id: USER.id, role, content });
+        await sb.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", currentConvoId);
+      }
+
+      function newChat() {
+        currentConvoId = null; convo.length = 0;
+        messages.innerHTML = EMPTY_HTML; mountChips();
+        document.querySelector(".chat-title").textContent = "New chat";
+        highlightActive(); closeSb();
+      }
+
+      // Ask the model for a short title once a chat has its first exchange.
+      async function autoTitle(userText) {
+        try {
+          const prompt = "Write a short title of 3 to 5 words for a conversation that begins with this message. Reply with ONLY the title, no quotes, no period:\n\n" + userText;
+          const res = await fetch(API + "/v1/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [{ role: "user", content: prompt }], tier: "core", search: false }) });
+          if (!res.ok) return;
+          const data = await res.json();
+          let title = (data.reply || "").trim().split("\n")[0].replace(/^["'“”]+|["'“”.]+$/g, "").trim();
+          if (!title || title.length > 60) return;
+          await sb.from("conversations").update({ title }).eq("id", currentConvoId);
+          document.querySelector(".chat-title").textContent = title;
+          loadConversations();
+        } catch (e) {}
+      }
+
+      // ---- send / stop ----
+      let sending = false, aborter = null;
+      function setSending(on) {
+        sending = on;
+        $("send").classList.toggle("stop", on);
+        $("sendIcon").innerHTML = on
+          ? '<rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor" stroke="none"/>'
+          : '<path d="M5 12h14M13 6l6 6-6 6"/>';
+        $("send").setAttribute("aria-label", on ? "Stop" : "Send");
+      }
+
       async function send(text) {
-        if (!text) return;
-        addMessage("user", text.replace(/</g, "&lt;"));
+        if (!text || sending) return;
+        const userBubble = addMessage("user", text.replace(/</g, "&lt;"));
         convo.push({ role: "user", content: text });
         const thinking = addMessage("bot", '<span class="typing"><span></span><span></span><span></span></span>');
-        const reply = await tryAI(convo);
-        if (reply == null) { thinking.remove(); showError(text); return; }
+        aborter = new AbortController();
+        setSending(true);
+        const reply = await tryAI(convo, aborter.signal);
+        setSending(false); aborter = null;
+
+        // Stopped before any answer — undo this turn and hand the text back.
+        if (reply && reply.aborted) {
+          thinking.remove(); userBubble.remove(); convo.pop();
+          input.value = text; grow(); input.focus();
+          if (!messages.querySelector(".msg")) { messages.innerHTML = EMPTY_HTML; mountChips(); }
+          return;
+        }
+        if (reply == null) { thinking.remove(); convo.pop(); showError(text); return; }
+
         convo.push({ role: "assistant", content: reply });
         const body = thinking.querySelector(".body");
         await streamInto(body, reply);
         renderRich(body, reply);
         messages.scrollTop = messages.scrollHeight;
+
+        // Persist only after a real answer, so cancelled/failed turns save nothing.
+        if (!isTest()) {
+          const firstTurn = !currentConvoId;
+          if (firstTurn) {
+            currentConvoId = await newConversation(text);
+            document.querySelector(".chat-title").textContent = text.slice(0, 80);
+          }
+          if (currentConvoId) {
+            await saveMsg("user", text);
+            await saveMsg("assistant", reply);
+            if (firstTurn) { loadConversations(); autoTitle(text); }
+          }
+        }
       }
-      $("composer").addEventListener("submit", (e) => { e.preventDefault(); const t = input.value.trim(); input.value = ""; input.style.height = "auto"; send(t); });
-      $("newChat").onclick = () => location.reload();
+
+      $("composer").addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (sending) { if (aborter) aborter.abort(); return; }
+        const t = input.value.trim(); input.value = ""; input.style.height = "auto"; send(t);
+      });
+      $("newChat").onclick = newChat;
+
+      // ---- microphone (speech-to-text, browser-native, free) ----
+      const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (Rec) {
+        let recog = null, recording = false;
+        $("micBtn").onclick = () => {
+          if (recording) { recog && recog.stop(); return; }
+          recog = new Rec();
+          recog.lang = navigator.language || "en-US";
+          recog.interimResults = true; recog.continuous = true;
+          const base = input.value ? input.value.replace(/\s*$/, "") + " " : "";
+          let finalT = "";
+          recog.onresult = (e) => {
+            let interim = "";
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+              const seg = e.results[i][0].transcript;
+              if (e.results[i].isFinal) finalT += seg; else interim += seg;
+            }
+            input.value = base + finalT + interim; grow();
+          };
+          const stop = () => { recording = false; $("micBtn").classList.remove("rec"); input.focus(); };
+          recog.onend = stop; recog.onerror = stop;
+          recog.start(); recording = true; $("micBtn").classList.add("rec");
+        };
+      } else {
+        $("micBtn").style.display = "none";
+      }
     </script>
   </body>
 </html>
