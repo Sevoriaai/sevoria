@@ -12,6 +12,8 @@
       })();
     </script>
     <link rel="stylesheet" href="assets/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/supabase.js"></script>
     <style>
       html[data-theme="dark"] { --paper: #1b1e25; --card: #23272f; --text: #ece7db; --text-mut: #9a958a; --line: rgba(236, 231, 219, 0.13); }
       html, body { height: 100%; }
@@ -250,7 +252,12 @@
     </div>
 
     <script>
-      if (!localStorage.getItem("ls_session")) { window.location.replace("login.html"); }
+      (async () => {
+        const { data } = await window.sb.auth.getSession();
+        if (!data.session) { window.location.replace("login.html"); return; }
+        const nameEl = document.querySelector(".acct-name");
+        if (nameEl) nameEl.textContent = data.session.user.email;
+      })();
       const $ = (id) => document.getElementById(id);
       const sidebar = $("sidebar"), scrim = $("scrim"), messages = $("messages"), input = $("input");
       const API = "https://email-wanna-cast-ethical.trycloudflare.com"; // ← swap for your live AI URL once deployed
@@ -275,7 +282,7 @@
       $("settingsBtn").onclick = () => settingsModal.classList.add("open");
       $("closeSettings").onclick = () => settingsModal.classList.remove("open");
       settingsModal.onclick = (e) => { if (e.target === settingsModal) settingsModal.classList.remove("open"); };
-      $("signOut").onclick = () => { localStorage.removeItem("ls_session"); location.href = "login.html"; };
+      $("signOut").onclick = async () => { await window.sb.auth.signOut(); location.href = "login.html"; };
 
       /* ---- conversation list ---- */
       const list = $("convoList");

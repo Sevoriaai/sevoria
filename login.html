@@ -7,6 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/supabase.js"></script>
     <style>
       :root { --ink:#16181d; --bone:#f3eee4; --bone-card:#fbf8f2; --brass:#c2922e; --brass-deep:#a87c20; --steel:#6b7280; --on-ink:#ece7db; --on-ink-mut:#9a958a; --on-bone:#1f2024; --on-bone-mut:#6b6a63; --line-bone:rgba(31,32,36,0.14); }
       * { box-sizing: border-box; }
@@ -40,11 +42,14 @@
       input:focus { outline: none; border-color: var(--brass); box-shadow: 0 0 0 3px rgba(194, 146, 46, 0.18); }
       .cta { width: 100%; padding: 13px; margin-top: 4px; font: inherit; font-weight: 600; font-size: 15px; color: #fff; background: var(--ink); border: none; border-radius: 10px; cursor: pointer; transition: background 0.15s, transform 0.05s; }
       .cta:hover { background: #000; }
-      .cta:active { transform: scale(0.99); }
-      .alt { margin: 20px 0 0; font-size: 14px; color: var(--on-bone-mut); text-align: center; }
+      .cta:disabled { opacity: 0.6; cursor: default; }
+      .msg { min-height: 1.2em; margin: 14px 0 0; font-size: 14px; text-align: center; }
+      .msg.err { color: #a32d2d; }
+      .msg.ok { color: var(--brass-deep); }
+      .alt { margin: 18px 0 0; font-size: 14px; color: var(--on-bone-mut); text-align: center; }
       .alt button { background: none; border: none; padding: 0; cursor: pointer; font: inherit; font-weight: 600; color: var(--brass-deep); text-decoration: underline; text-underline-offset: 2px; }
-      .foot { margin-top: 28px; font-size: 12px; line-height: 1.6; color: var(--on-bone-mut); text-align: center; }
-      .foot a { color: var(--brass-deep); text-decoration: underline; text-underline-offset: 2px; }
+      .foot { margin-top: 26px; font-size: 12px; line-height: 1.6; color: var(--on-bone-mut); text-align: center; }
+      .foot a { color: var(--brass-deep); text-decoration: underline; }
       @media (max-width: 820px) {
         .wrap { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
         .brand-panel { flex-direction: row; align-items: center; justify-content: center; padding: 18px; }
@@ -72,31 +77,19 @@
       </section>
 
       <section class="panel">
-        <form class="form" id="form" onsubmit="return false">
+        <form class="form" id="form">
           <p class="eyebrow" id="eyebrow">Welcome back</p>
           <h2 id="title">Sign in to Sevoria</h2>
           <p class="sub" id="sub">Pick up the conversation where you left off.</p>
 
           <div class="social">
-            <button type="button" class="soc">
+            <button type="button" class="soc" data-provider="google">
               <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
               Continue with Google
             </button>
-            <button type="button" class="soc">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.05 12.04c-.03-2.66 2.17-3.94 2.27-4-1.24-1.81-3.17-2.06-3.85-2.09-1.64-.17-3.2.96-4.03.96-.83 0-2.11-.94-3.47-.91-1.79.03-3.44 1.04-4.36 2.64-1.86 3.23-.48 8 1.33 10.61.88 1.28 1.93 2.71 3.3 2.66 1.32-.05 1.82-.86 3.42-.86 1.59 0 2.04.86 3.44.83 1.42-.03 2.32-1.3 3.19-2.59 1-1.48 1.42-2.91 1.44-2.98-.03-.01-2.76-1.06-2.79-4.21zM14.53 4.16c.73-.89 1.22-2.12 1.09-3.35-1.05.04-2.32.7-3.07 1.58-.67.78-1.26 2.03-1.1 3.23 1.17.09 2.36-.59 3.08-1.46z"/></svg>
-              Continue with Apple
-            </button>
-            <button type="button" class="soc">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.37.5 0 5.87 0 12.5c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12.01 12.01 0 0 0 24 12.5C24 5.87 18.63.5 12 .5z"/></svg>
-              Continue with GitHub
-            </button>
           </div>
-          <div class="divider">or use email</div>
+          <div class="divider">or</div>
 
-          <div class="field" id="name-field" hidden>
-            <label for="name">Name</label>
-            <input id="name" type="text" placeholder="What should Sevoria call you?" autocomplete="name" />
-          </div>
           <div class="field">
             <label for="email">Email</label>
             <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
@@ -106,32 +99,66 @@
             <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
           </div>
           <button class="cta" id="cta" type="submit">Continue</button>
+          <p class="msg" id="msg"></p>
           <p class="alt" id="alt"><span id="alt-text">New here?</span> <button type="button" id="toggle">Create an account</button></p>
-          <p class="foot">By continuing, you agree to our <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</p>
+          <p class="foot">By continuing you agree to our <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</p>
         </form>
       </section>
     </main>
+
     <script>
-      let mode = "signin";
+      const sb = window.sb;
       const $ = (id) => document.getElementById(id);
+      const msg = (t, ok) => { const m = $("msg"); m.textContent = t; m.className = "msg " + (ok ? "ok" : "err"); };
+
+      // Already signed in? Go straight to the app.
+      sb.auth.getSession().then(({ data }) => { if (data.session) location.href = "chat.html"; });
+
+      let mode = "signin";
       $("toggle").addEventListener("click", () => {
         mode = mode === "signin" ? "signup" : "signin";
         const up = mode === "signup";
         $("eyebrow").textContent = up ? "Get started" : "Welcome back";
         $("title").textContent = up ? "Create your account" : "Sign in to Sevoria";
         $("sub").textContent = up ? "A minute to set up. Then it's just you and Sevoria." : "Pick up the conversation where you left off.";
-        $("name-field").hidden = !up;
         $("cta").textContent = up ? "Create account" : "Continue";
         $("alt-text").textContent = up ? "Already have an account?" : "New here?";
         $("toggle").textContent = up ? "Sign in" : "Create an account";
         $("password").setAttribute("autocomplete", up ? "new-password" : "current-password");
+        msg("");
       });
 
-      // Placeholder session until Supabase is wired: any sign-in path sets a flag
-      // and enters the app. This becomes a real Supabase session check later.
-      function enter() { localStorage.setItem("ls_session", "1"); window.location.href = "chat.html"; }
-      document.getElementById("form").addEventListener("submit", enter);
-      document.querySelectorAll(".soc").forEach((b) => b.addEventListener("click", enter));
+      // Social sign-in (Google) via Supabase OAuth.
+      document.querySelectorAll(".soc").forEach((b) => b.addEventListener("click", async () => {
+        const { error } = await sb.auth.signInWithOAuth({
+          provider: b.dataset.provider,
+          options: { redirectTo: location.origin + location.pathname.replace("login.html", "chat.html") },
+        });
+        if (error) msg(error.message);
+      }));
+
+      // Email / password.
+      $("form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = $("email").value.trim();
+        const password = $("password").value;
+        if (!email || !password) return msg("Enter your email and password.");
+        $("cta").disabled = true;
+        try {
+          if (mode === "signup") {
+            const { data, error } = await sb.auth.signUp({ email, password });
+            if (error) return msg(error.message);
+            if (data.session) location.href = "chat.html";
+            else msg("Check your email to confirm, then sign in.", true);
+          } else {
+            const { error } = await sb.auth.signInWithPassword({ email, password });
+            if (error) return msg(error.message);
+            location.href = "chat.html";
+          }
+        } finally {
+          $("cta").disabled = false;
+        }
+      });
     </script>
   </body>
 </html>
