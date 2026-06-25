@@ -123,7 +123,11 @@
 
       /* ---------- modals ---------- */
       .scrim2 { position: fixed; inset: 0; background: rgba(10,11,14,0.4); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 90; padding: 22px; }
-      .scrim2.open { display: flex; }
+      .scrim2.open { display: flex; animation: fade .15s ease; }
+      @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes pop { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: none; } }
+      .menu.open, .model-menu.open, .tools-menu.open { animation: pop .16s ease; }
+      .upgrade, .settings { animation: pop .2s ease; }
       .upgrade { background: var(--glass); backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--glass-brd); border-radius: var(--r3); max-width: 420px; width: 100%; padding: 30px; text-align: center; box-shadow: var(--shadow); }
       .upgrade h3 { font-family: "Fraunces", serif; font-size: 26px; margin: 14px 0 8px; color: var(--text); }
       .upgrade p { color: var(--text-mut); margin: 0 0 22px; font-size: 15px; }
@@ -267,6 +271,7 @@
           <div class="st" data-p="billing">Billing</div>
           <div class="st" data-p="security">Security &amp; login</div>
           <div class="st" data-p="account">Account</div>
+          <div class="st" data-p="admin" id="adminNav" style="display:none">Admin</div>
         </nav>
         <div class="set-body">
           <div class="set-page on" data-p="general">
@@ -338,7 +343,18 @@
             <div class="row2"><span class="lab">Name</span><span id="accName2" style="color:var(--text-mut);font-size:14px"></span></div>
             <div class="row2"><span class="lab">Email</span><span id="accEmail2" style="color:var(--text-mut);font-size:14px"></span></div>
             <div class="row2"><span class="lab">Sign out</span><button class="ubtn" id="signOut2" style="padding:8px 14px">Sign out</button></div>
-            <div class="row2"><span class="lab dngr">Delete account</span><span class="soonpill">soon</span></div>
+            <div class="row2"><div><div class="lab">Test mode</div><div class="des">A debug chat that doesn't save or learn anything — for testing how Sevoria responds.</div></div><label class="sw2"><input type="checkbox" id="testMode" /><span></span></label></div>
+            <div class="row2"><div><div class="lab">Deactivate account</div><div class="des">Pause your account; sign back in anytime to reactivate.</div></div><span class="soonpill">soon</span></div>
+            <div class="row2"><span class="lab dngr">Delete account permanently</span><span class="soonpill">soon</span></div>
+          </div>
+          <div class="set-page" data-p="admin">
+            <h3>Admin</h3>
+            <p style="color:var(--text-mut);font-size:13px;margin:0 0 6px">Owner controls — visible only to you.</p>
+            <div class="row2"><div style="flex:1"><div class="lab">Find a user</div><input class="ta" style="min-height:auto;height:40px;margin-top:8px" placeholder="user@email.com" /></div></div>
+            <div class="row2"><span class="lab">Set their plan</span><select class="mini"><option>Free</option><option>Pro</option><option>Max</option></select></div>
+            <div class="row2"><span class="lab">Grant credits</span><input class="mini" style="width:90px" placeholder="500" /></div>
+            <div class="row2"><span class="lab">Apply changes</span><button class="ubtn p" style="padding:8px 14px" disabled>Save (soon)</button></div>
+            <div class="row2"><span class="lab dngr">Delete a user's account</span><span class="soonpill">soon</span></div>
           </div>
         </div>
       </div>
@@ -364,6 +380,7 @@
         $("acctName").textContent = name; $("menuName").textContent = name;
         $("secEmail").textContent = USER.email; $("accEmail2").textContent = USER.email; $("accName2").textContent = name;
         window._avatarHTML = pic ? '<img src="' + pic + '" alt="">' : initial;
+        if (USER.email === "richyrachfansgmial@gmail.com") $("adminNav").style.display = "block";
       })();
 
       function openSb() { $("sidebar").classList.add("open"); $("scrim").classList.add("show"); }

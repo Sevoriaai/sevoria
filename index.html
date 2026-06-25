@@ -6,6 +6,9 @@
     <title>Sevoria — a sharper, more honest AI assistant</title>
     <meta name="description" content="Sevoria is a sharp, honest AI assistant for the things you actually do — writing, thinking, learning, getting unstuck." />
     <link rel="stylesheet" href="assets/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/supabase.js"></script>
+    <script>window.sb && window.sb.auth.getSession().then(function (r) { if (r.data.session) location.replace("chat.html"); });</script>
     <style>
       .lx-hero { max-width: var(--maxw); margin: 0 auto; padding: 60px 24px 80px; display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 60px; align-items: center; }
       .lx-kicker { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; letter-spacing: 0.4px; color: var(--brass-deep); margin: 0 0 22px; }
