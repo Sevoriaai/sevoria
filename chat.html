@@ -210,6 +210,16 @@
       .ta { width: 100%; margin-top: 10px; font: inherit; font-size: 14px; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: var(--r1); padding: 11px; resize: vertical; min-height: 80px; }
       .soonpill { font-size: 11px; color: var(--text-mut); background: var(--card); border: 1px solid var(--line); padding: 3px 9px; border-radius: 20px; }
       .dngr { color: #b5403e; }
+      .set-search { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--line); border-radius: var(--r1); padding: 9px 12px; margin-bottom: 16px; position: sticky; top: 0; z-index: 2; }
+      .set-search svg { color: var(--text-mut); flex: none; }
+      .set-search input { flex: 1; border: none; background: none; outline: none; font: inherit; font-size: 14px; color: var(--text); }
+      #setPages.searching .set-page { display: block; }
+      #setPages.searching .set-page h3 { font-size: 14px; color: var(--text-mut); margin: 16px 0 2px; }
+      #setPages.searching .set-page:first-child h3 { margin-top: 0; }
+      .set-item.nomatch, .set-page.nomatch { display: none !important; }
+      .app.compact .msg { padding-top: 7px; padding-bottom: 7px; }
+      .app.compact .msg .body { line-height: 1.5; }
+      .app.compact .messages { padding-top: 6px; }
 
       .scrim { display: none; }
       @media (max-width: 860px) {
@@ -323,9 +333,9 @@
         <button class="icon-btn set-close" id="closeSet" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         <nav class="set-nav" id="setNav">
           <div class="st on" data-p="general">General</div>
-          <div class="st" data-p="notifications">Notifications</div>
           <div class="st" data-p="personalization">Personalization</div>
           <div class="st" data-p="memory">Memory</div>
+          <div class="st" data-p="notifications">Notifications</div>
           <div class="st" data-p="apps">Apps</div>
           <div class="st" data-p="voice">Voice</div>
           <div class="st" data-p="data">Data controls</div>
@@ -335,87 +345,90 @@
           <div class="st" data-p="admin" id="adminNav" style="display:none">Admin</div>
         </nav>
         <div class="set-body">
+          <div class="set-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="setSearch" type="text" placeholder="Search settings" autocomplete="off" /></div>
+          <div id="setPages">
           <div class="set-page on" data-p="general">
             <h3>General</h3>
-            <div class="row2"><span class="lab">Theme</span><div class="seg" id="themeSeg"><button data-mode="light">Light</button><button data-mode="dark">Dark</button><button data-mode="system">System</button></div></div>
-            <div class="row2"><span class="lab">Accent color</span><select class="mini" disabled><option>Brass</option></select></div>
-            <div class="row2"><span class="lab">Language</span><select class="mini"><option>Auto-detect</option><option>English</option></select></div>
-            <div class="row2"><div><div class="lab">Higher intelligence</div><div class="des">Automatically use a sharper model for complex questions.</div></div><label class="sw2"><input type="checkbox" /><span></span></label></div>
-            <div class="row2"><div><div class="lab">Streaming responses</div><div class="des">Show replies as they're written.</div></div><label class="sw2"><input type="checkbox" checked /><span></span></label></div>
-            <div class="row2"><span class="lab">Send with Enter</span><label class="sw2"><input type="checkbox" checked /><span></span></label></div>
-          </div>
-          <div class="set-page" data-p="notifications">
-            <h3>Notifications</h3>
-            <div class="row2"><span class="lab">Email notifications</span><label class="sw2"><input type="checkbox" checked /><span></span></label></div>
-            <div class="row2"><span class="lab">Product updates</span><label class="sw2"><input type="checkbox" /><span></span></label></div>
-            <div class="row2"><span class="lab">Security alerts</span><label class="sw2"><input type="checkbox" checked /><span></span></label></div>
+            <div class="row2 set-item"><span class="lab">Theme</span><div class="seg" id="themeSeg"><button data-mode="light">Light</button><button data-mode="dark">Dark</button><button data-mode="system">System</button></div></div>
+            <div class="row2 set-item"><div><div class="lab">Message density</div><div class="des">Comfortable spacing, or compact to fit more on screen.</div></div><div class="seg" id="densitySeg"><button data-d="comfortable">Comfortable</button><button data-d="compact">Compact</button></div></div>
+            <div class="row2 set-item"><div><div class="lab">Streaming responses</div><div class="des">Type replies out word by word. Off = show instantly.</div></div><label class="sw2"><input type="checkbox" id="setStream" /><span></span></label></div>
+            <div class="row2 set-item"><div><div class="lab">Send with Enter</div><div class="des">On: Enter sends, Shift+Enter = new line. Off: Enter = new line, Ctrl/⌘+Enter sends.</div></div><label class="sw2"><input type="checkbox" id="setEnter" /><span></span></label></div>
+            <div class="row2 set-item"><span class="lab">Language</span><select class="mini" id="setLang"><option>Auto-detect</option><option>English</option></select></div>
           </div>
           <div class="set-page" data-p="personalization">
             <h3>Personalization</h3>
-            <div style="padding:14px 0;border-bottom:1px solid var(--line)"><div class="lab">What should Sevoria know about you?</div><div class="des">Tell it about yourself — your work, interests, or facts to remember (e.g. "my cat is named Whiskers").</div><textarea class="ta" placeholder="I'm a student… I prefer concise answers… my cat is Whiskers…"></textarea></div>
-            <div style="padding:14px 0;border-bottom:1px solid var(--line)"><div class="lab">How should Sevoria respond?</div><div class="des">Set the tone and style it uses with you.</div><textarea class="ta" placeholder="Be direct and professional… or goofy and casual…"></textarea></div>
-            <div class="row2"><span class="lab">Response style</span><select class="mini"><option>Default</option><option>Friendly</option><option>Professional</option><option>Direct</option><option>Funny</option></select></div>
-            <div class="row2"><span class="lab">Detail level</span><select class="mini"><option>Balanced</option><option>Concise</option><option>Detailed</option></select></div>
-            <div class="row2"><span class="lab">Reference chat history</span><label class="sw2"><input type="checkbox" checked /><span></span></label></div>
+            <div class="set-item" style="padding:14px 0;border-bottom:1px solid var(--line)"><div class="lab">What should Sevoria know about you?</div><div class="des">Your work, interests, or facts to remember (e.g. "my cat is named Whiskers"). Sent with every chat.</div><textarea class="ta" id="setAbout" placeholder="I'm a student… I prefer concise answers… my cat is Whiskers…"></textarea></div>
+            <div class="set-item" style="padding:14px 0;border-bottom:1px solid var(--line)"><div class="lab">How should Sevoria respond?</div><div class="des">Set the tone and style it uses with you.</div><textarea class="ta" id="setStyle" placeholder="Be direct and professional… or goofy and casual…"></textarea></div>
+            <div class="row2 set-item"><span class="lab">Response tone</span><select class="mini" id="setTone"><option>Default</option><option>Friendly</option><option>Professional</option><option>Direct</option><option>Funny</option></select></div>
+            <div class="row2 set-item"><span class="lab">Detail level</span><select class="mini" id="setDetail"><option>Balanced</option><option>Concise</option><option>Detailed</option></select></div>
+            <div class="row2 set-item"><div><div class="lab">Reference chat history</div><div class="des">Let Sevoria see earlier messages in the current chat for context.</div></div><label class="sw2"><input type="checkbox" id="setRefHist" /><span></span></label></div>
           </div>
           <div class="set-page" data-p="memory">
             <h3>Memory</h3>
-            <div class="row2"><div><div class="lab">Enable memory</div><div class="des">Sevoria remembers useful facts across your chats. Free plan has limited memory.</div></div><label class="sw2"><input type="checkbox" checked /><span></span></label></div>
-            <div class="row2"><span class="lab">Ask before saving a memory</span><label class="sw2"><input type="checkbox" /><span></span></label></div>
-            <div class="row2"><div><div class="lab">View saved memories</div><div class="des">Everything Sevoria remembers about you, across all chats.</div></div><span class="soonpill">soon</span></div>
-            <div class="row2"><span class="lab dngr">Clear all memories</span><span class="soonpill">soon</span></div>
+            <div class="row2 set-item"><div><div class="lab">Enable memory</div><div class="des">Sevoria remembers useful facts across your chats. Free plan has limited memory.</div></div><label class="sw2"><input type="checkbox" id="setMem" /><span></span></label></div>
+            <div class="row2 set-item"><span class="lab">Ask before saving a memory</span><label class="sw2"><input type="checkbox" id="setMemAsk" /><span></span></label></div>
+            <div class="row2 set-item"><div><div class="lab">View saved memories</div><div class="des">Everything Sevoria remembers about you, across all chats.</div></div><span class="soonpill">soon</span></div>
+            <div class="row2 set-item"><span class="lab dngr">Clear all memories</span><span class="soonpill">soon</span></div>
+          </div>
+          <div class="set-page" data-p="notifications">
+            <h3>Notifications</h3>
+            <div class="row2 set-item"><span class="lab">Email notifications</span><label class="sw2"><input type="checkbox" id="setNotifEmail" /><span></span></label></div>
+            <div class="row2 set-item"><span class="lab">Product updates</span><label class="sw2"><input type="checkbox" id="setNotifProduct" /><span></span></label></div>
+            <div class="row2 set-item"><span class="lab">Security alerts</span><label class="sw2"><input type="checkbox" id="setNotifSec" /><span></span></label></div>
           </div>
           <div class="set-page" data-p="apps">
             <h3>Apps &amp; connectors</h3>
-            <div class="row2"><span class="lab">Google Drive</span><span class="soonpill">soon</span></div>
-            <div class="row2"><span class="lab">Gmail</span><span class="soonpill">soon</span></div>
-            <div class="row2"><span class="lab">GitHub</span><span class="soonpill">soon</span></div>
-            <div class="row2"><span class="lab">Notion</span><span class="soonpill">soon</span></div>
+            <div class="row2 set-item"><span class="lab">Google Drive</span><span class="soonpill">soon</span></div>
+            <div class="row2 set-item"><span class="lab">Gmail</span><span class="soonpill">soon</span></div>
+            <div class="row2 set-item"><span class="lab">GitHub</span><span class="soonpill">soon</span></div>
+            <div class="row2 set-item"><span class="lab">Notion</span><span class="soonpill">soon</span></div>
           </div>
           <div class="set-page" data-p="voice">
             <h3>Voice</h3>
-            <div class="row2"><span class="lab">Voice conversations</span><span class="soonpill">soon</span></div>
-            <div class="row2"><span class="lab">Voice</span><select class="mini" disabled><option>Default</option></select></div>
-            <div class="row2"><span class="lab">Speaking speed</span><select class="mini" disabled><option>Normal</option></select></div>
+            <div class="row2 set-item"><div><div class="lab">Microphone dictation</div><div class="des">Use the mic button in the composer to speak your message.</div></div><span style="color:var(--brass-deep);font-size:13px;font-weight:600">On</span></div>
+            <div class="row2 set-item"><span class="lab">Spoken replies</span><span class="soonpill">soon</span></div>
+            <div class="row2 set-item"><span class="lab">Voice</span><select class="mini" disabled><option>Default</option></select></div>
           </div>
           <div class="set-page" data-p="data">
             <h3>Data controls</h3>
-            <div class="row2"><div><div class="lab">Use my chats to improve Sevoria</div><div class="des">Helps make the assistant better over time.</div></div><label class="sw2"><input type="checkbox" checked /><span></span></label></div>
-            <div class="row2"><span class="lab">Chat history</span><label class="sw2"><input type="checkbox" checked /><span></span></label></div>
-            <div class="row2"><span class="lab">Export my data</span><span class="soonpill">soon</span></div>
-            <div class="row2"><span class="lab dngr">Delete all chats</span><span class="soonpill">soon</span></div>
+            <div class="row2 set-item"><div><div class="lab">Save chat history</div><div class="des">Store your chats so you can return to them. Off = nothing is saved.</div></div><label class="sw2"><input type="checkbox" id="setSaveHist" /><span></span></label></div>
+            <div class="row2 set-item"><div><div class="lab">Export my data</div><div class="des">Download all your chats and account info as a JSON file.</div></div><button class="ubtn" id="btnExport" style="padding:8px 14px">Export</button></div>
+            <div class="row2 set-item"><div><div class="lab dngr">Delete all chats</div><div class="des">Permanently remove every conversation. Can't be undone.</div></div><button class="ubtn" id="btnDeleteAll" style="padding:8px 14px;border-color:#d7443e;color:#d7443e">Delete all</button></div>
           </div>
           <div class="set-page" data-p="billing">
             <h3>Billing</h3>
-            <div class="row2"><span class="lab">Current plan</span><span style="color:var(--text-mut);font-size:14px">Free · 120 credits / mo</span></div>
-            <div class="row2"><span class="lab">Credits remaining</span><span style="color:var(--text-mut);font-size:14px">120 · resets Jul 1</span></div>
-            <div class="row2"><span class="lab">Upgrade to Pro</span><a href="pricing.html" style="font-size:14px">See plans ↗</a></div>
-            <div class="row2"><span class="lab">Invoices</span><span class="soonpill">soon</span></div>
+            <div class="row2 set-item"><span class="lab">Current plan</span><span id="billPlan" style="color:var(--text-mut);font-size:14px">—</span></div>
+            <div class="row2 set-item"><span class="lab">Credits remaining</span><span id="billCredits" style="color:var(--text-mut);font-size:14px">—</span></div>
+            <div class="row2 set-item"><span class="lab">Upgrade to Pro</span><a href="pricing.html" style="font-size:14px">See plans ↗</a></div>
+            <div class="row2 set-item"><span class="lab">Invoices</span><span class="soonpill">soon</span></div>
           </div>
           <div class="set-page" data-p="security">
             <h3>Security &amp; login</h3>
-            <div class="row2"><span class="lab">Email</span><span id="secEmail" style="color:var(--text-mut);font-size:14px"></span></div>
-            <div class="row2"><span class="lab">Two-factor authentication</span><span class="soonpill">soon</span></div>
-            <div class="row2"><span class="lab">Active sessions</span><span class="soonpill">soon</span></div>
-            <div class="row2"><span class="lab">Change password</span><span class="soonpill">soon</span></div>
+            <div class="row2 set-item"><span class="lab">Email</span><span id="secEmail" style="color:var(--text-mut);font-size:14px"></span></div>
+            <div class="row2 set-item"><div><div class="lab">Change password</div><div class="des">We'll email you a secure reset link.</div></div><button class="ubtn" id="btnChangePw" style="padding:8px 14px">Send reset link</button></div>
+            <div class="row2 set-item"><span class="lab">Two-factor authentication</span><span class="soonpill">soon</span></div>
+            <div class="row2 set-item"><span class="lab">Active sessions</span><span class="soonpill">soon</span></div>
           </div>
           <div class="set-page" data-p="account">
             <h3>Account</h3>
-            <div class="row2"><span class="lab">Name</span><span id="accName2" style="color:var(--text-mut);font-size:14px"></span></div>
-            <div class="row2"><span class="lab">Email</span><span id="accEmail2" style="color:var(--text-mut);font-size:14px"></span></div>
-            <div class="row2"><span class="lab">Sign out</span><button class="ubtn" id="signOut2" style="padding:8px 14px">Sign out</button></div>
-            <div class="row2"><div><div class="lab">Test mode</div><div class="des">A debug chat that doesn't save or learn anything — for testing how Sevoria responds.</div></div><label class="sw2"><input type="checkbox" id="testMode" /><span></span></label></div>
-            <div class="row2"><div><div class="lab">Deactivate account</div><div class="des">Pause your account; sign back in anytime to reactivate.</div></div><span class="soonpill">soon</span></div>
-            <div class="row2"><span class="lab dngr">Delete account permanently</span><span class="soonpill">soon</span></div>
+            <div class="row2 set-item"><div style="flex:1"><div class="lab">Name</div><div class="des">What Sevoria calls you.</div></div><div style="display:flex;gap:8px;align-items:center"><input id="setName" class="mini" style="width:160px" /><button class="ubtn" id="btnSaveName" style="padding:8px 12px">Save</button></div></div>
+            <div class="row2 set-item"><span class="lab">Email</span><span id="accEmail2" style="color:var(--text-mut);font-size:14px"></span></div>
+            <div class="row2 set-item"><span class="lab">Sign out</span><button class="ubtn" id="signOut2" style="padding:8px 14px">Sign out</button></div>
+            <div class="row2 set-item"><div><div class="lab">Test mode</div><div class="des">A debug chat that doesn't save or learn anything — for testing how Sevoria responds.</div></div><label class="sw2"><input type="checkbox" id="testMode" /><span></span></label></div>
+            <div class="row2 set-item"><div><div class="lab dngr">Delete my account</div><div class="des">Erases your chats and signs you out. Email us to fully remove your login.</div></div><button class="ubtn" id="btnDeleteAcct" style="padding:8px 14px;border-color:#d7443e;color:#d7443e">Delete</button></div>
           </div>
           <div class="set-page" data-p="admin">
             <h3>Admin</h3>
-            <p style="color:var(--text-mut);font-size:13px;margin:0 0 6px">Owner controls — visible only to you.</p>
-            <div class="row2"><div style="flex:1"><div class="lab">Find a user</div><input class="ta" style="min-height:auto;height:40px;margin-top:8px" placeholder="user@email.com" /></div></div>
-            <div class="row2"><span class="lab">Set their plan</span><select class="mini"><option>Free</option><option>Pro</option><option>Max</option></select></div>
-            <div class="row2"><span class="lab">Grant credits</span><input class="mini" style="width:90px" placeholder="500" /></div>
-            <div class="row2"><span class="lab">Apply changes</span><button class="ubtn p" style="padding:8px 14px" disabled>Save (soon)</button></div>
-            <div class="row2"><span class="lab dngr">Delete a user's account</span><span class="soonpill">soon</span></div>
+            <p style="color:var(--text-mut);font-size:13px;margin:0 0 10px">Owner controls. Changes write to the profiles table (server-enforced).</p>
+            <div class="set-item" style="padding:6px 0 14px;border-bottom:1px solid var(--line)">
+              <div class="lab">Find a user by email</div>
+              <div style="display:flex;gap:8px;margin-top:8px"><input id="admEmail" class="mini" style="flex:1" placeholder="user@email.com" /><button class="ubtn" id="admLookup" style="padding:8px 14px">Look up</button></div>
+              <div id="admStatus" style="font-size:13px;color:var(--text-mut);margin-top:10px"></div>
+            </div>
+            <div class="row2 set-item"><span class="lab">Plan</span><select class="mini" id="admPlan"><option value="free">Free</option><option value="pro">Pro</option><option value="max">Max</option></select></div>
+            <div class="row2 set-item"><span class="lab">Credits</span><input id="admCredits" class="mini" style="width:110px" type="number" placeholder="120" /></div>
+            <div class="row2 set-item"><span class="lab">Apply changes</span><button class="ubtn p" id="admSave" style="padding:8px 14px" disabled>Save changes</button></div>
+          </div>
           </div>
         </div>
       </div>
@@ -441,9 +454,12 @@
         function fillAvatar(el) { el.innerHTML = pic ? '<img src="' + pic + '" alt="">' : initial; }
         fillAvatar($("avatar")); fillAvatar($("menuAvatar"));
         $("acctName").textContent = name; $("menuName").textContent = name;
-        $("secEmail").textContent = USER.email; $("accEmail2").textContent = USER.email; $("accName2").textContent = name;
+        $("secEmail").textContent = USER.email; $("accEmail2").textContent = USER.email;
+        $("setName").value = name;
         window._avatarHTML = pic ? '<img src="' + pic + '" alt="">' : initial;
         if (USER.email === "richyrachfansgmial@gmail.com") $("adminNav").style.display = "block";
+        initUserSettings(name);
+        loadProfile();
         loadConversations();
       })();
 
@@ -487,10 +503,150 @@
       document.querySelectorAll("[data-set]").forEach((b) => (b.onclick = () => openSettings(b.dataset.set)));
       $("closeSet").onclick = () => settingsModal.classList.remove("open");
       settingsModal.onclick = (e) => { if (e.target === settingsModal) settingsModal.classList.remove("open"); };
+      function clearSetSearch() {
+        $("setSearch").value = "";
+        $("setPages").classList.remove("searching");
+        document.querySelectorAll("#setPages .set-page, #setPages .set-item").forEach((n) => n.classList.remove("nomatch"));
+      }
       document.querySelectorAll(".set-nav .st").forEach((s) => (s.onclick = () => {
+        clearSetSearch();
         document.querySelectorAll(".set-nav .st").forEach((x) => x.classList.toggle("on", x === s));
         document.querySelectorAll(".set-page").forEach((p) => p.classList.toggle("on", p.dataset.p === s.dataset.p));
       }));
+
+      // ---- settings search ----
+      $("setSearch").addEventListener("input", () => {
+        const q = $("setSearch").value.trim().toLowerCase();
+        const pages = document.querySelectorAll("#setPages .set-page");
+        const adminHidden = $("adminNav").style.display === "none";
+        if (!q) { clearSetSearch(); return; }
+        $("setPages").classList.add("searching");
+        pages.forEach((p) => {
+          if (p.dataset.p === "admin" && adminHidden) { p.classList.add("nomatch"); return; }
+          let any = false;
+          p.querySelectorAll(".set-item").forEach((i) => { const m = i.textContent.toLowerCase().includes(q); i.classList.toggle("nomatch", !m); if (m) any = true; });
+          p.classList.toggle("nomatch", !any);
+        });
+      });
+
+      // ---- settings persistence (localStorage) ----
+      function bindCheck(id, key, def, after) {
+        const el = $(id); if (!el) return;
+        const s = localStorage.getItem(key);
+        el.checked = s == null ? def : s === "1";
+        el.addEventListener("change", () => { localStorage.setItem(key, el.checked ? "1" : "0"); after && after(); });
+      }
+      function bindVal(id, key) {
+        const el = $(id); if (!el) return;
+        const s = localStorage.getItem(key); if (s != null) el.value = s;
+        const save = () => localStorage.setItem(key, el.value);
+        el.addEventListener("input", save); el.addEventListener("change", save);
+      }
+      function applyDensity() { app.classList.toggle("compact", localStorage.getItem("ls_density") === "compact"); }
+      function bindSeg(segId, key, def, after) {
+        const cur = localStorage.getItem(key) || def;
+        document.querySelectorAll("#" + segId + " button").forEach((b) => {
+          b.classList.toggle("on", b.dataset.d === cur);
+          b.onclick = () => { localStorage.setItem(key, b.dataset.d); document.querySelectorAll("#" + segId + " button").forEach((x) => x.classList.toggle("on", x === b)); after && after(); };
+        });
+      }
+      bindSeg("densitySeg", "ls_density", "comfortable", applyDensity); applyDensity();
+      bindCheck("setStream", "ls_stream", true);
+      bindCheck("setEnter", "ls_enter", true);
+      bindVal("setAbout", "ls_about"); bindVal("setStyle", "ls_style"); bindVal("setTone", "ls_tone"); bindVal("setDetail", "ls_detail"); bindVal("setLang", "ls_lang");
+      bindCheck("setRefHist", "ls_refhist", true);
+      bindCheck("setMem", "ls_mem", true); bindCheck("setMemAsk", "ls_memask", false);
+      bindCheck("setNotifEmail", "ls_notif_email", true); bindCheck("setNotifProduct", "ls_notif_product", false); bindCheck("setNotifSec", "ls_notif_sec", true);
+      bindCheck("setSaveHist", "ls_savehist", true);
+
+      // ---- settings helpers used by the chat loop ----
+      function shouldSave() { return !isTest() && localStorage.getItem("ls_savehist") !== "0"; }
+      function streamOn() { return localStorage.getItem("ls_stream") !== "0"; }
+      function enterSends() { return localStorage.getItem("ls_enter") !== "0"; }
+      function refHistOn() { return localStorage.getItem("ls_refhist") !== "0"; }
+      function getInstructions() {
+        const about = (localStorage.getItem("ls_about") || "").trim();
+        const style = (localStorage.getItem("ls_style") || "").trim();
+        const tone = localStorage.getItem("ls_tone") || "Default";
+        const detail = localStorage.getItem("ls_detail") || "Balanced";
+        const p = [];
+        if (about) p.push("About the user: " + about);
+        if (style) p.push("How to respond: " + style);
+        if (tone && tone !== "Default") p.push("Tone: " + tone + ".");
+        if (detail === "Concise") p.push("Keep answers brief and to the point.");
+        if (detail === "Detailed") p.push("Give thorough, detailed answers.");
+        return p.join("\n");
+      }
+
+      // ---- user-specific settings (name, data, security, admin) ----
+      function initUserSettings(name) {
+        $("signOut2").onclick = logout;
+        $("btnSaveName").onclick = async () => {
+          const nn = $("setName").value.trim(); if (!nn) return;
+          $("btnSaveName").disabled = true;
+          const { error } = await sb.auth.updateUser({ data: { name: nn, full_name: nn } });
+          $("btnSaveName").disabled = false;
+          if (!error) { $("acctName").textContent = nn; $("menuName").textContent = nn; $("btnSaveName").textContent = "Saved ✓"; setTimeout(() => ($("btnSaveName").textContent = "Save"), 1800); }
+        };
+        $("btnChangePw").onclick = async () => {
+          const { error } = await sb.auth.resetPasswordForEmail(USER.email, { redirectTo: location.origin + location.pathname.replace("chat.html", "login.html") });
+          $("btnChangePw").textContent = error ? "Error" : "Sent ✓"; setTimeout(() => ($("btnChangePw").textContent = "Send reset link"), 2500);
+        };
+        $("btnExport").onclick = async () => {
+          $("btnExport").textContent = "Exporting…";
+          const { data: convos } = await sb.from("conversations").select("id,title,created_at,updated_at").order("created_at");
+          const { data: msgs } = await sb.from("messages").select("conversation_id,role,content,created_at").order("created_at");
+          const out = { account: { email: USER.email, name }, exported_at: new Date().toISOString(), conversations: convos || [], messages: msgs || [] };
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: "application/json" }));
+          a.download = "sevoria-export.json"; a.click();
+          $("btnExport").textContent = "Export";
+        };
+        $("btnDeleteAll").onclick = async () => {
+          if (!confirm("Delete ALL your chats permanently? This can't be undone.")) return;
+          await sb.from("conversations").delete().eq("user_id", USER.id);
+          newChat(); loadConversations();
+        };
+        $("btnDeleteAcct").onclick = async () => {
+          if (!confirm("Delete your account data and sign out? Your chats will be erased.")) return;
+          await sb.from("conversations").delete().eq("user_id", USER.id);
+          await sb.auth.signOut(); location.href = "login.html";
+        };
+
+        // admin panel
+        let admTarget = null;
+        $("admLookup").onclick = async () => {
+          const email = $("admEmail").value.trim().toLowerCase(); if (!email) return;
+          $("admStatus").textContent = "Looking up…"; $("admSave").disabled = true; admTarget = null;
+          const { data, error } = await sb.from("profiles").select("id,email,plan,credits,is_admin").eq("email", email).maybeSingle();
+          if (error) { $("admStatus").textContent = "Error: " + error.message; return; }
+          if (!data) { $("admStatus").textContent = "No user with that email (they must sign in once first)."; return; }
+          admTarget = data; $("admPlan").value = data.plan; $("admCredits").value = data.credits;
+          $("admStatus").textContent = "Found " + data.email + " — " + data.plan + ", " + data.credits + " credits" + (data.is_admin ? " · admin" : "");
+          $("admSave").disabled = false;
+        };
+        $("admSave").onclick = async () => {
+          if (!admTarget) return;
+          $("admSave").disabled = true;
+          const plan = $("admPlan").value, credits = parseInt($("admCredits").value, 10);
+          const { error } = await sb.from("profiles").update({ plan, credits: isNaN(credits) ? admTarget.credits : credits, updated_at: new Date().toISOString() }).eq("id", admTarget.id);
+          $("admStatus").textContent = error ? ("Error: " + error.message) : "Saved ✓";
+          $("admSave").disabled = false;
+          if (!error && admTarget.id === USER.id) loadProfile();
+        };
+      }
+
+      async function loadProfile() {
+        const { data: prof } = await sb.from("profiles").select("plan,credits,is_admin").eq("id", USER.id).maybeSingle();
+        const plan = prof ? prof.plan : "free";
+        const credits = prof ? prof.credits : 0;
+        const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+        $("acctSub").textContent = planName + " · " + credits + " credits";
+        const pl = document.querySelector("#profMenu .pl"); if (pl) pl.textContent = planName + " plan";
+        $("billPlan").textContent = planName + " plan";
+        $("billCredits").textContent = credits + " credits";
+        if (prof && prof.is_admin) $("adminNav").style.display = "block";
+      }
 
       // ---- conversation list (saved chat history) ----
       const list = $("convoList");
@@ -569,7 +725,11 @@
       const EMPTY_HTML = messages.innerHTML; // empty-state markup, restored on New chat
       function grow() { input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 170) + "px"; }
       input.addEventListener("input", grow);
-      input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("composer").requestSubmit(); } });
+      input.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter") return;
+        const go = enterSends() ? !e.shiftKey : (e.metaKey || e.ctrlKey);
+        if (go) { e.preventDefault(); $("composer").requestSubmit(); }
+      });
 
       // ---- model picker ----
       let tier = "core";
@@ -586,7 +746,8 @@
       $("upgradeModal").onclick = (e) => { if (e.target === $("upgradeModal")) $("upgradeModal").classList.remove("open"); };
 
       // ---- tools ----
-      const toolsMenu = $("toolsMenu"); let searchOn = true;
+      const toolsMenu = $("toolsMenu"); let searchOn = false;
+      $("searchTool").classList.toggle("off", !searchOn); // off by default (so "hello" isn't searched)
       $("toolsBtn").onclick = (e) => { e.stopPropagation(); toolsMenu.classList.toggle("open"); };
       $("searchTool").onclick = () => { searchOn = !searchOn; $("searchTool").classList.toggle("off", !searchOn); };
       document.addEventListener("click", () => { modelMenu.classList.remove("open"); toolsMenu.classList.remove("open"); profMenu.classList.remove("open"); });
@@ -637,7 +798,7 @@
       async function tryAI(convo, signal) {
         for (let a = 0; a < 3; a++) {
           try {
-            const res = await fetch(API + "/v1/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: convo, tier, search: searchOn }), signal });
+            const res = await fetch(API + "/v1/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: convo, tier, search: searchOn, instructions: getInstructions() }), signal });
             if (!res.ok) throw 0;
             const data = await res.json();
             if (data.error || !data.reply) throw 0;
@@ -705,7 +866,7 @@
         const thinking = addMessage("bot", '<span class="typing"><span></span><span></span><span></span></span>');
         aborter = new AbortController();
         setSending(true);
-        const reply = await tryAI(convo, aborter.signal);
+        const reply = await tryAI(refHistOn() ? convo : convo.slice(-1), aborter.signal);
         setSending(false); aborter = null;
 
         // Stopped before any answer — undo this turn and hand the text back.
@@ -719,12 +880,12 @@
 
         convo.push({ role: "assistant", content: reply });
         const body = thinking.querySelector(".body");
-        await streamInto(body, reply);
+        if (streamOn()) await streamInto(body, reply);
         renderRich(body, reply);
         messages.scrollTop = messages.scrollHeight;
 
         // Persist only after a real answer, so cancelled/failed turns save nothing.
-        if (!isTest()) {
+        if (shouldSave()) {
           const firstTurn = !currentConvoId;
           if (firstTurn) {
             currentConvoId = await newConversation(text);

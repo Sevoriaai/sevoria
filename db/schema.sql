@@ -38,3 +38,56 @@ create policy "own conversations" on public.conversations
 drop policy if exists "own messages" on public.messages;
 create policy "own messages" on public.messages
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- =====================================================================
+-- profiles: one row per user — plan, credit balance, admin flag.
+-- Rows are created by a trigger (never by the client), so users can't
+-- mint themselves credits. Only admins can change plan/credits.
+-- =====================================================================
+create table if not exists public.profiles (
+  id         uuid primary key references auth.users(id) on delete cascade,
+  email      text,
+  plan       text    not null default 'free',
+  credits    integer not null default 120,
+  is_admin   boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.profiles enable row level security;
+
+-- SECURITY DEFINER helper avoids policy recursion when checking admin.
+create or replace function public.is_admin() returns boolean
+  language sql security definer stable set search_path = public as $$
+  select coalesce((select is_admin from public.profiles where id = auth.uid()), false);
+$$;
+
+drop policy if exists "profiles read own or admin" on public.profiles;
+create policy "profiles read own or admin" on public.profiles
+  for select using (id = auth.uid() or public.is_admin());
+
+-- Only admins may change plan / credits / is_admin. Users never self-update.
+drop policy if exists "profiles update admin only" on public.profiles;
+create policy "profiles update admin only" on public.profiles
+  for update using (public.is_admin()) with check (public.is_admin());
+
+-- Auto-create a profile whenever a new auth user is created.
+create or replace function public.handle_new_user() returns trigger
+  language plpgsql security definer set search_path = public as $$
+begin
+  insert into public.profiles (id, email) values (new.id, new.email)
+  on conflict (id) do nothing;
+  return new;
+end; $$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+-- Backfill profiles for anyone who signed up before this ran.
+insert into public.profiles (id, email)
+  select id, email from auth.users on conflict (id) do nothing;
+
+-- AFTER the owner account exists, make it an admin (run once):
+--   update public.profiles set is_admin = true where email = 'richyrachfansgmial@gmail.com';
