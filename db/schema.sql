@@ -21,6 +21,15 @@ create table if not exists public.messages (
   created_at      timestamptz not null default now()
 );
 
+-- ---- migration guards: add any missing columns on pre-existing tables ----
+-- (If you created conversations/messages from an earlier draft, CREATE TABLE
+--  IF NOT EXISTS won't add new columns — these ALTERs do, idempotently.)
+alter table public.conversations add column if not exists title      text        not null default 'New chat';
+alter table public.conversations add column if not exists created_at timestamptz  not null default now();
+alter table public.conversations add column if not exists updated_at timestamptz  not null default now();
+alter table public.messages      add column if not exists user_id    uuid;
+alter table public.messages      add column if not exists created_at timestamptz  not null default now();
+
 -- ---- indexes (fast sidebar + fast message load) ----
 create index if not exists conversations_user_updated_idx
   on public.conversations (user_id, updated_at desc);
@@ -48,12 +57,15 @@ create table if not exists public.profiles (
   id         uuid primary key references auth.users(id) on delete cascade,
   email      text,
   plan       text    not null default 'free',
-  credits    integer not null default 120,
+  credits    integer not null default 1000,
   is_admin   boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
+alter table public.profiles add column if not exists plan     text    not null default 'free';
+alter table public.profiles add column if not exists credits  integer not null default 1000;
+alter table public.profiles add column if not exists is_admin boolean not null default false;
 alter table public.profiles enable row level security;
 
 -- SECURITY DEFINER helper avoids policy recursion when checking admin.

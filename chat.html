@@ -12,11 +12,12 @@
       })();
     </script>
     <link rel="stylesheet" href="assets/styles.css" />
+    <script src="assets/theme.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="assets/supabase.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github-dark.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github-dark.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/common.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/highlight.min.js"></script>
     <style>
       :root { --r1: 12px; --r2: 16px; --r3: 22px; --glass: rgba(250,247,240,0.72); --glass-brd: rgba(31,32,36,0.10); --shadow: 0 24px 60px -24px rgba(22,24,29,0.35); }
       html[data-theme="dark"] { --paper: #14161b; --card: #1d2027; --card-2: #242832; --text: #ece7db; --text-mut: #9a958a; --line: rgba(236,231,219,0.10); --ink: #0f1115; --glass: rgba(26,29,36,0.72); --glass-brd: rgba(236,231,219,0.10); --shadow: 0 24px 60px -24px rgba(0,0,0,0.6); }
@@ -103,17 +104,24 @@
       .msg .ava img { width: 100%; height: 100%; object-fit: cover; }
       .msg.user .ava { background: var(--brass); color: #1c1407; }
       .msg.bot .ava { background: var(--ink); }
-      .msg .body { font-size: 15px; color: var(--text); padding-top: 4px; line-height: 1.65; }
-      .msg .body.plain { white-space: pre-wrap; }
+      .msg .body { flex: 1; min-width: 0; font-size: 15px; color: var(--text); padding-top: 4px; line-height: 1.65; }
+      .msg .body.plain { white-space: pre-wrap; word-break: break-word; }
       .msg .body p { margin: 0 0 10px; } .msg .body p:last-child { margin-bottom: 0; }
       .msg .body ul, .msg .body ol { margin: 8px 0; padding-left: 22px; }
       .msg .body h1, .msg .body h2, .msg .body h3 { font-weight: 600; margin: 14px 0 6px; font-size: 1.05em; }
-      .msg .body :not(pre) > code { background: var(--card); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .9em; }
-      .msg .body pre { background: #0d1117; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin: 10px 0; }
+      .msg .body :not(pre) > code { background: var(--card); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .9em; word-break: break-word; }
+      /* code block: fixed header (lang + copy stay put), single clean scroll inside */
+      .msg .body pre { max-width: 100%; background: #0d1117; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin: 10px 0; }
       .msg .body pre code { display: block; padding: 14px; overflow-x: auto; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; line-height: 1.55; background: transparent; }
-      .code-bar { display: flex; align-items: center; justify-content: space-between; padding: 7px 12px; background: #161b22; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 12px; color: #9aa0aa; }
-      .code-copy { background: none; border: 1px solid rgba(255,255,255,.16); color: #cdd3da; border-radius: 7px; padding: 3px 11px; font: inherit; font-size: 12px; cursor: pointer; }
+      .code-bar { position: sticky; left: 0; display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #161b22; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 12px; color: #9aa0aa; }
+      .code-copy { background: none; border: 1px solid rgba(255,255,255,.16); color: #cdd3da; border-radius: 7px; padding: 3px 11px; font: inherit; font-size: 12px; cursor: pointer; flex: none; }
       .code-copy:hover { background: rgba(255,255,255,.08); }
+      /* slim custom scrollbars across the app */
+      .messages, .convo-list, .set-body, .set-nav, .msg .body pre code, .menu, .model-menu, .tools-menu { scrollbar-width: thin; scrollbar-color: rgba(140,140,150,.45) transparent; }
+      .messages::-webkit-scrollbar, .convo-list::-webkit-scrollbar, .set-body::-webkit-scrollbar, .msg .body pre code::-webkit-scrollbar { width: 9px; height: 9px; }
+      .messages::-webkit-scrollbar-thumb, .convo-list::-webkit-scrollbar-thumb, .set-body::-webkit-scrollbar-thumb, .msg .body pre code::-webkit-scrollbar-thumb { background: rgba(140,140,150,.4); border-radius: 20px; border: 2px solid transparent; background-clip: content-box; }
+      .messages::-webkit-scrollbar-thumb:hover, .msg .body pre code::-webkit-scrollbar-thumb:hover { background: rgba(140,140,150,.65); background-clip: content-box; }
+      .messages::-webkit-scrollbar-track, .convo-list::-webkit-scrollbar-track, .msg .body pre code::-webkit-scrollbar-track { background: transparent; }
       .typing { display: inline-flex; gap: 6px; padding-top: 10px; }
       .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--steel); animation: bob 1.4s ease-in-out infinite; }
       .typing span:nth-child(2) { animation-delay: .18s; }
@@ -214,6 +222,20 @@
       .ta { width: 100%; margin-top: 10px; font: inherit; font-size: 14px; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: var(--r1); padding: 11px; resize: vertical; min-height: 80px; }
       .soonpill { font-size: 11px; color: var(--text-mut); background: var(--card); border: 1px solid var(--line); padding: 3px 9px; border-radius: 20px; }
       .dngr { color: #b5403e; }
+      .test-banner { display: flex; align-items: center; gap: 10px; max-width: 760px; margin: 10px auto 0; padding: 9px 16px; background: rgba(194,146,46,.12); border: 1px solid rgba(194,146,46,.38); border-radius: var(--r1); color: var(--brass-deep); font-size: 13px; }
+      .test-banner svg { flex: none; }
+      .legal-links { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; }
+      .legal-links a { color: var(--text); font-size: 14px; opacity: .85; text-decoration: none; }
+      .legal-links a:hover { color: var(--brass-deep); opacity: 1; text-decoration: underline; }
+      .cs { position: relative; display: inline-block; }
+      .cs-btn { display: flex; align-items: center; gap: 10px; justify-content: space-between; font: inherit; font-size: 13px; color: var(--text); background: var(--card); border: 1px solid var(--line); padding: 7px 12px; border-radius: var(--r1); cursor: pointer; min-width: 130px; }
+      .cs-btn:hover { border-color: var(--brass); }
+      .cs-btn svg { color: var(--text-mut); flex: none; }
+      .cs-menu { position: absolute; right: 0; top: calc(100% + 6px); min-width: 100%; background: var(--glass); backdrop-filter: blur(20px) saturate(1.3); -webkit-backdrop-filter: blur(20px) saturate(1.3); border: 1px solid var(--glass-brd); border-radius: var(--r1); box-shadow: var(--shadow); padding: 5px; z-index: 50; display: none; }
+      .cs.open .cs-menu { display: block; animation: pop .15s ease; }
+      .cs-opt { padding: 8px 12px; border-radius: 8px; font-size: 13px; color: var(--text); cursor: pointer; white-space: nowrap; }
+      .cs-opt:hover { background: var(--card); }
+      .cs-opt.sel { color: var(--brass-deep); font-weight: 600; }
       .set-search { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--line); border-radius: var(--r1); padding: 9px 12px; margin-bottom: 16px; position: sticky; top: 0; z-index: 2; }
       .set-search svg { color: var(--text-mut); flex: none; }
       .set-search input { flex: 1; border: none; background: none; outline: none; font: inherit; font-size: 14px; color: var(--text); }
@@ -292,10 +314,15 @@
               <div class="model-opt" data-tier="reason"><div><div class="ot">Sevoria Reason</div><div class="od">Slower, thinks harder — for tougher questions</div></div><span class="check"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12l5 5L20 6"/></svg></span></div>
               <div class="model-grouplab">Subscription</div>
               <div class="model-opt locked" data-tier="pro"><div><div class="ot">Sevoria Pro</div><div class="od">Much smarter — for real work</div></div><span class="lock-tag">Pro</span></div>
-              <div class="model-opt locked" data-tier="max"><div><div class="ot">Sevoria Max</div><div class="od">Our most capable — great at everything</div></div><span class="lock-tag max">Max</span></div>
+              <div class="model-opt locked" data-tier="max"><div><div class="ot">Sevoria Max</div><div class="od">Our most capable model</div></div><span class="lock-tag max">Max</span></div>
             </div>
           </div>
         </header>
+
+        <div class="test-banner" id="testBanner" hidden>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+          <span><b>Test mode is on.</b> This chat isn't being saved, titled, or counted — for testing only.</span>
+        </div>
 
         <div class="messages" id="messages">
           <div class="empty" id="emptyState">
@@ -346,6 +373,7 @@
           <div class="st" data-p="billing">Billing</div>
           <div class="st" data-p="security">Security &amp; login</div>
           <div class="st" data-p="account">Account</div>
+          <div class="st" data-p="legal">About &amp; legal</div>
           <div class="st" data-p="admin" id="adminNav" style="display:none">Admin</div>
         </nav>
         <div class="set-body">
@@ -418,7 +446,6 @@
             <div class="row2 set-item"><div style="flex:1"><div class="lab">Name</div><div class="des">What Sevoria calls you.</div></div><div style="display:flex;gap:8px;align-items:center"><input id="setName" class="mini" style="width:160px" /><button class="ubtn" id="btnSaveName" style="padding:8px 12px">Save</button></div></div>
             <div class="row2 set-item"><span class="lab">Email</span><span id="accEmail2" style="color:var(--text-mut);font-size:14px"></span></div>
             <div class="row2 set-item"><span class="lab">Sign out</span><button class="ubtn" id="signOut2" style="padding:8px 14px">Sign out</button></div>
-            <div class="row2 set-item"><div><div class="lab">Test mode</div><div class="des">A debug chat that doesn't save or learn anything — for testing how Sevoria responds.</div></div><label class="sw2"><input type="checkbox" id="testMode" /><span></span></label></div>
             <div class="row2 set-item"><div><div class="lab dngr">Delete my account</div><div class="des">Erases your chats and signs you out. Email us to fully remove your login.</div></div><button class="ubtn" id="btnDeleteAcct" style="padding:8px 14px;border-color:#d7443e;color:#d7443e">Delete</button></div>
           </div>
           <div class="set-page" data-p="admin">
@@ -432,6 +459,29 @@
             <div class="row2 set-item"><span class="lab">Plan</span><select class="mini" id="admPlan"><option value="free">Free</option><option value="pro">Pro</option><option value="max">Max</option></select></div>
             <div class="row2 set-item"><span class="lab">Credits</span><input id="admCredits" class="mini" style="width:110px" type="number" placeholder="120" /></div>
             <div class="row2 set-item"><span class="lab">Apply changes</span><button class="ubtn p" id="admSave" style="padding:8px 14px" disabled>Save changes</button></div>
+            <div class="row2 set-item" style="margin-top:8px;border-top:1px solid var(--line);padding-top:16px"><div><div class="lab">Test mode</div><div class="des">A debug chat that doesn't save or learn anything — for testing how Sevoria responds. A banner shows while it's active.</div></div><label class="sw2"><input type="checkbox" id="testMode" /><span></span></label></div>
+          </div>
+          <div class="set-page" data-p="legal">
+            <h3>About &amp; legal</h3>
+            <div class="row2 set-item"><span class="lab">Version</span><span id="aboutVer" style="color:var(--text-mut);font-size:14px"></span></div>
+            <div class="set-item" style="padding:14px 0"><div class="lab" style="margin-bottom:10px">Policies</div>
+              <div class="legal-links">
+                <a href="privacy.html" target="_blank">Privacy Policy</a>
+                <a href="terms.html" target="_blank">Terms of Use</a>
+                <a href="acceptable-use.html" target="_blank">Acceptable Use</a>
+                <a href="ai-transparency.html" target="_blank">AI Transparency</a>
+                <a href="cookies.html" target="_blank">Cookie Notice</a>
+                <a href="limitations.html" target="_blank">Model Limitations</a>
+                <a href="security.html" target="_blank">Security</a>
+                <a href="refund.html" target="_blank">Refund &amp; Credits</a>
+                <a href="credit-usage.html" target="_blank">Credit Usage</a>
+                <a href="subprocessors.html" target="_blank">Subprocessors</a>
+                <a href="dmca.html" target="_blank">Copyright / DMCA</a>
+                <a href="abuse.html" target="_blank">Report Abuse</a>
+                <a href="support.html" target="_blank">Support</a>
+                <a href="contact.html" target="_blank">Contact</a>
+              </div>
+            </div>
           </div>
           </div>
         </div>
@@ -441,10 +491,11 @@
     <script>
       const sb = window.sb;
       const $ = (id) => document.getElementById(id);
-      const API = "https://hey-cartridge-technology-develops.trycloudflare.com"; // ← tunnel URL (ephemeral; re-point on restart)
-      const VERSION = "v0.4";
+      const API = "https://prisoner-devoted-sealed-operational.trycloudflare.com"; // ← tunnel URL (ephemeral; re-point on restart)
+      const VERSION = "v0.6";
       let USER = null;
       $("menuVer").textContent = "Sevoria " + VERSION + " · Beta";
+      $("aboutVer").textContent = "Sevoria " + VERSION + " · Beta";
 
       // ---- gate + user ----
       (async () => {
@@ -461,7 +512,6 @@
         $("secEmail").textContent = USER.email; $("accEmail2").textContent = USER.email;
         $("setName").value = name;
         window._avatarHTML = pic ? '<img src="' + pic + '" alt="">' : initial;
-        if (USER.email === "richyrachfansgmial@gmail.com") $("adminNav").style.display = "block";
         initUserSettings(name);
         loadProfile();
         loadConversations();
@@ -563,6 +613,30 @@
       bindCheck("setNotifEmail", "ls_notif_email", true); bindCheck("setNotifProduct", "ls_notif_product", false); bindCheck("setNotifSec", "ls_notif_sec", true);
       bindCheck("setSaveHist", "ls_savehist", true);
 
+      // ---- custom dropdowns (replace native <select> in settings) ----
+      function customSelect(sel) {
+        if (sel.dataset.cs) return; sel.dataset.cs = "1";
+        sel.style.display = "none";
+        const cs = document.createElement("div"); cs.className = "cs";
+        const btn = document.createElement("button"); btn.type = "button"; btn.className = "cs-btn";
+        const lbl = document.createElement("span");
+        btn.appendChild(lbl);
+        btn.insertAdjacentHTML("beforeend", '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>');
+        const menu = document.createElement("div"); menu.className = "cs-menu";
+        const sync = () => { lbl.textContent = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : ""; menu.querySelectorAll(".cs-opt").forEach((o) => o.classList.toggle("sel", o.dataset.v === sel.value)); };
+        [...sel.options].forEach((op) => {
+          const o = document.createElement("div"); o.className = "cs-opt"; o.dataset.v = op.value; o.textContent = op.text;
+          o.onclick = () => { sel.value = op.value; sel.dispatchEvent(new Event("change", { bubbles: true })); sel.dispatchEvent(new Event("input", { bubbles: true })); sync(); cs.classList.remove("open"); };
+          menu.appendChild(o);
+        });
+        btn.onclick = (e) => { e.stopPropagation(); const open = cs.classList.contains("open"); document.querySelectorAll(".cs.open").forEach((c) => c.classList.remove("open")); cs.classList.toggle("open", !open); };
+        cs.appendChild(btn); cs.appendChild(menu);
+        sel.parentElement.insertBefore(cs, sel.nextSibling);
+        sync();
+      }
+      document.addEventListener("click", () => document.querySelectorAll(".cs.open").forEach((c) => c.classList.remove("open")));
+      ["setTone", "setDetail", "setLang", "admPlan"].forEach((id) => { const el = $(id); if (el) customSelect(el); });
+
       // ---- settings helpers used by the chat loop ----
       function shouldSave() { return !isTest() && localStorage.getItem("ls_savehist") !== "0"; }
       function streamOn() { return localStorage.getItem("ls_stream") !== "0"; }
@@ -643,7 +717,7 @@
       let CUR_PLAN = "Free";
       function setCreditsDisplay(credits) {
         $("acctSub").textContent = CUR_PLAN + " · " + credits + " credits";
-        $("billCredits").textContent = credits + " credits";
+        $("billCredits").textContent = credits + " credits · resets monthly";
       }
       async function spendCredits(cost) {
         if (!cost || isTest()) return;
@@ -653,7 +727,7 @@
       async function loadProfile() {
         const { data: prof } = await sb.from("profiles").select("plan,credits,is_admin").eq("id", USER.id).maybeSingle();
         const plan = prof ? prof.plan : "free";
-        const credits = prof ? prof.credits : 0;
+        const credits = prof ? prof.credits : 1000;
         CUR_PLAN = plan.charAt(0).toUpperCase() + plan.slice(1);
         const pl = document.querySelector("#profMenu .pl"); if (pl) pl.textContent = CUR_PLAN + " plan";
         $("billPlan").textContent = CUR_PLAN + " plan";
@@ -791,10 +865,22 @@
         row.querySelector(".retry").onclick = () => { row.remove(); send(lastUserText); };
         messages.appendChild(row); messages.scrollTop = messages.scrollHeight;
       }
+      // Reveal the reply progressively, rendering markdown as it grows so code
+      // blocks (with highlighting + copy bar) form WHILE it's "typing". Scales
+      // the step to the length so even long answers finish in ~2s.
       function streamInto(el, text) {
-        el.textContent = ""; const parts = text.split(/(\s+)/); let i = 0;
-        el.classList.add("plain");
-        return new Promise((res) => { const t = setInterval(() => { el.textContent += parts[i++] || ""; toBottom(); if (i >= parts.length) { clearInterval(t); res(); } }, 16); });
+        const parts = text.split(/(\s+)/);
+        const frames = 55;
+        const step = Math.max(1, Math.ceil(parts.length / frames));
+        let i = 0;
+        return new Promise((res) => {
+          const t = setInterval(() => {
+            i += step;
+            renderRich(el, parts.slice(0, i).join(""));
+            toBottom();
+            if (i >= parts.length) { clearInterval(t); renderRich(el, text); res(); }
+          }, 38);
+        });
       }
       function enhance(c) {
         c.querySelectorAll("pre code").forEach((b) => {
@@ -834,6 +920,9 @@
 
       // Test mode (Settings → Account) means nothing is saved or learned.
       function isTest() { const t = $("testMode"); return !!(t && t.checked); }
+      function syncTestBanner() { const b = $("testBanner"); if (b) b.hidden = !isTest(); }
+      if ($("testMode")) $("testMode").addEventListener("change", syncTestBanner);
+      syncTestBanner();
 
       async function newConversation(firstText) {
         const { data, error } = await sb.from("conversations").insert({ user_id: USER.id, title: firstText.slice(0, 80) }).select("id").single();

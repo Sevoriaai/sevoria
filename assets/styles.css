@@ -20,6 +20,26 @@
   --r-sm: 9px;
 }
 
+/* Dark mode — follows the user's saved theme / OS so jumping from the dark
+   chat to a marketing page doesn't "flashbang". Set by assets/theme.js. */
+html[data-theme="dark"] {
+  --paper: #14161b;
+  --card: #1d2027;
+  --bone: #1d2027;
+  --text: #ece7db;
+  --text-mut: #9a958a;
+  --line: rgba(236, 231, 219, 0.12);
+}
+html[data-theme="dark"] .site-header { background: rgba(18, 20, 25, 0.85); }
+html[data-theme="dark"] .btn-ghost:hover { background: rgba(255, 255, 255, 0.06); }
+html[data-theme="dark"] .feature, html[data-theme="dark"] .pr-card { background: #1a1d23; }
+
+/* Long legal footer flows into two columns on wider screens */
+@media (min-width: 760px) {
+  .footer-cols .leg { column-count: 2; column-gap: 22px; }
+  .footer-cols .leg h4 { column-span: all; }
+}
+
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
