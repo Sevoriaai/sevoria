@@ -346,7 +346,7 @@
         if (data.session) { location.href = "chat.html"; return; }
         currentEmail = email; verifyType = "signup";
         setStep("code");
-        msg("We emailed a 6-digit code to confirm your account.", true);
+        msg("Check your email — click the confirm link, or enter the 6-digit code below.", true);
       }
 
       // ---- routing: form submit (Enter) + buttons ----
@@ -374,7 +374,7 @@
       const origSetStep = setStep;
       setStep = function (name) {
         origSetStep(name);
-        if (name === "code") $("sub").innerHTML = "We sent a 6-digit code to <b>" + currentEmail.replace(/</g, "&lt;") + "</b>.";
+        if (name === "code") $("sub").innerHTML = "We emailed <b>" + currentEmail.replace(/</g, "&lt;") + "</b> — open it and click the sign-in link, or enter the 6-digit code below if you got one.";
         if (name === "pw") $("sub").innerHTML = "Signing in as <b>" + currentEmail.replace(/</g, "&lt;") + "</b>.";
       };
 
