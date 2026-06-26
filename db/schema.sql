@@ -118,3 +118,16 @@ begin
    returning credits into newbal;
   return coalesce(newbal, 0);
 end; $$;
+
+-- =====================================================================
+-- GRANTS — REQUIRED because this project has "expose new tables" OFF, so
+-- manually-created tables are NOT auto-granted to the API roles. Without
+-- these, a logged-in user gets "permission denied for table" even though
+-- RLS policies exist. RLS still restricts WHICH rows they can touch.
+-- =====================================================================
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete on public.conversations to authenticated;
+grant select, insert, update, delete on public.messages      to authenticated;
+grant select, update                 on public.profiles       to authenticated;
+grant execute on function public.spend_credits(integer) to authenticated;
+grant execute on function public.is_admin()             to authenticated;
