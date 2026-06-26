@@ -131,3 +131,46 @@ grant select, insert, update, delete on public.messages      to authenticated;
 grant select, update                 on public.profiles       to authenticated;
 grant execute on function public.spend_credits(integer) to authenticated;
 grant execute on function public.is_admin()             to authenticated;
+
+-- =====================================================================
+-- INVITE-ONLY BETA: referral codes. A user can't reach the chat until they
+-- redeem a valid code (profiles.invited = true). Admins generate codes.
+-- =====================================================================
+alter table public.profiles add column if not exists invited boolean not null default false;
+-- Admins are always considered invited.
+update public.profiles set invited = true where is_admin = true;
+
+create table if not exists public.referral_codes (
+  code       text primary key,
+  created_by uuid references auth.users(id) on delete set null,
+  used_by    uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  used_at    timestamptz
+);
+alter table public.referral_codes enable row level security;
+
+-- Only admins can see / create codes directly.
+drop policy if exists "referral admin" on public.referral_codes;
+create policy "referral admin" on public.referral_codes
+  for all using (public.is_admin()) with check (public.is_admin());
+
+-- Redeem a code: marks it used by the caller and flips their invited flag.
+-- SECURITY DEFINER so a normal (not-yet-invited) user can run it even though
+-- they can't read the table. Returns true on success, false if invalid/used.
+create or replace function public.redeem_referral(p_code text) returns boolean
+  language plpgsql security definer set search_path = public as $$
+declare ok boolean;
+begin
+  update public.referral_codes
+     set used_by = auth.uid(), used_at = now()
+   where code = p_code and used_by is null
+  returning true into ok;
+  if ok then
+    update public.profiles set invited = true, updated_at = now() where id = auth.uid();
+    return true;
+  end if;
+  return false;
+end; $$;
+
+grant select, insert, update, delete on public.referral_codes to authenticated;
+grant execute on function public.redeem_referral(text) to authenticated;

@@ -239,6 +239,25 @@
       .set-note { font-size: 12.5px; color: var(--text-mut); background: var(--card); border: 1px solid var(--line); border-radius: var(--r1); padding: 9px 12px; margin: 0 0 6px; line-height: 1.5; }
       .set-toast { position: absolute; top: 14px; left: 50%; transform: translateX(-50%) translateY(-12px); background: var(--ink); color: var(--on-ink); font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 20px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 100; }
       .set-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .ref-gate { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 22px; background: var(--ink); }
+      .ref-card { width: 100%; max-width: 380px; text-align: center; background: var(--glass); backdrop-filter: blur(26px) saturate(1.3); -webkit-backdrop-filter: blur(26px) saturate(1.3); border: 1px solid var(--glass-brd); border-radius: var(--r3); box-shadow: var(--shadow); padding: 34px 30px; }
+      .ref-card h2 { font-family: "Fraunces", serif; font-size: 26px; color: var(--text); margin: 6px 0 8px; }
+      .ref-card p { color: var(--text-mut); font-size: 14px; line-height: 1.6; margin: 0 0 18px; }
+      .ref-card p a { color: var(--brass-deep); }
+      .ref-card input { width: 100%; padding: 13px 14px; font: inherit; font-size: 15px; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: var(--r1); text-align: center; letter-spacing: 1px; }
+      .ref-card input:focus { outline: none; border-color: var(--brass); }
+      .ref-btn { width: 100%; margin-top: 12px; padding: 13px; border: none; border-radius: var(--r1); background: var(--brass); color: #1c1407; font: inherit; font-weight: 600; font-size: 15px; cursor: pointer; }
+      .ref-btn:hover { background: var(--brass-deep); }
+      .ref-msg { min-height: 1.1em; margin: 12px 0 0 !important; font-size: 13px; }
+      .ref-msg.err { color: #d7443e; }
+      .ref-msg.ok { color: var(--brass-deep); }
+      .ref-signout { margin-top: 14px; background: none; border: none; color: var(--text-mut); font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; }
+      .adm-list { margin-top: 10px; max-height: 220px; overflow: auto; border: 1px solid var(--line); border-radius: var(--r1); }
+      .adm-row { display: flex; justify-content: space-between; gap: 10px; padding: 8px 12px; font-size: 13px; border-bottom: 1px solid var(--line); }
+      .adm-row:last-child { border-bottom: none; }
+      .adm-row .e { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .adm-row .m { color: var(--text-mut); flex: none; }
+      .adm-code { font-family: ui-monospace, Menlo, monospace; color: var(--brass-deep); }
       .set-search { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--line); border-radius: var(--r1); padding: 9px 12px; margin-bottom: 16px; position: sticky; top: 0; z-index: 2; }
       .set-search svg { color: var(--text-mut); flex: none; }
       .set-search input { flex: 1; border: none; background: none; outline: none; font: inherit; font-size: 14px; color: var(--text); }
@@ -466,6 +485,18 @@
             <div class="row2 set-item"><span class="lab">Credits</span><input id="admCredits" class="mini" style="width:110px" type="number" placeholder="120" /></div>
             <div class="row2 set-item"><span class="lab">Apply changes</span><button class="ubtn p" id="admSave" style="padding:8px 14px" disabled>Save changes</button></div>
             <div class="row2 set-item" style="margin-top:8px;border-top:1px solid var(--line);padding-top:16px"><div><div class="lab">Test mode</div><div class="des">A debug chat that doesn't save or learn anything — for testing how Sevoria responds. A banner shows while it's active.</div></div><label class="sw2"><input type="checkbox" id="testMode" /><span></span></label></div>
+
+            <div class="set-item" style="padding:16px 0 6px;border-top:1px solid var(--line);margin-top:8px">
+              <div class="lab">Referral codes</div>
+              <div class="des" style="margin-bottom:8px">The site is invite-only. Generate codes to hand out to beta testers.</div>
+              <button class="ubtn p" id="admGenCode" style="padding:8px 14px">Generate a code</button>
+              <div class="adm-list" id="admCodes" style="margin-top:10px"></div>
+            </div>
+            <div class="set-item" style="padding:10px 0 6px">
+              <div class="lab">All users</div>
+              <div class="des" style="margin-bottom:8px">Everyone who has signed up.</div>
+              <div class="adm-list" id="admUsers"></div>
+            </div>
           </div>
           <div class="set-page" data-p="legal">
             <h3>About &amp; legal</h3>
@@ -494,11 +525,23 @@
       </div>
     </div>
 
+    <div class="ref-gate" id="refGate" hidden>
+      <div class="ref-card">
+        <svg width="46" height="46" viewBox="0 0 40 40" style="margin:0 auto 6px"><circle cx="20" cy="20" r="17" fill="none" stroke="#6b7280" stroke-width="1.1" opacity=".5"/><path d="M20 4 L23.9 16.1 L36 20 L23.9 23.9 L20 36 L16.1 23.9 L4 20 L16.1 16.1 Z" fill="#c2922e"/></svg>
+        <h2>Sevoria is in private beta</h2>
+        <p>Enter your referral code to get in. Don't have one? Ask whoever invited you, or email <a href="mailto:sevoriaai@gmail.com">sevoriaai@gmail.com</a>.</p>
+        <input id="refInput" type="text" placeholder="Referral code" autocomplete="off" />
+        <button class="ref-btn" id="refRedeem">Unlock Sevoria</button>
+        <p class="ref-msg" id="refMsg"></p>
+        <button class="ref-signout" id="refSignout">Sign out</button>
+      </div>
+    </div>
+
     <script>
       const sb = window.sb;
       const $ = (id) => document.getElementById(id);
-      const API = "https://prisoner-devoted-sealed-operational.trycloudflare.com"; // ← tunnel URL (ephemeral; re-point on restart)
-      const VERSION = "v0.7";
+      const API = "https://hitting-are-invalid-chargers.trycloudflare.com"; // ← tunnel URL (ephemeral; re-point on restart)
+      const VERSION = "v0.8";
       let USER = null;
       $("menuVer").textContent = "Sevoria " + VERSION + " · Beta";
       $("aboutVer").textContent = "Sevoria " + VERSION + " · Beta";
@@ -519,9 +562,28 @@
         $("setName").value = name;
         window._avatarHTML = pic ? '<img src="' + pic + '" alt="">' : initial;
         initUserSettings(name);
-        loadProfile();
+        const prof = await loadProfile();
+        // Invite-only beta: block the app until the user has redeemed a code.
+        if (!prof || !(prof.is_admin || prof.invited)) { showRefGate(); return; }
         loadConversations();
       })();
+
+      // ---- referral gate (private beta) ----
+      function showRefGate() {
+        $("refGate").hidden = false;
+        $("refSignout").onclick = logout;
+        $("refRedeem").onclick = async () => {
+          const code = $("refInput").value.trim();
+          if (!code) return;
+          $("refRedeem").disabled = true; $("refMsg").textContent = "Checking…"; $("refMsg").className = "ref-msg";
+          const { data, error } = await sb.rpc("redeem_referral", { p_code: code });
+          $("refRedeem").disabled = false;
+          if (error) { $("refMsg").textContent = error.message; $("refMsg").className = "ref-msg err"; return; }
+          if (data === true) { $("refMsg").textContent = "You're in — welcome to Sevoria."; $("refMsg").className = "ref-msg ok"; setTimeout(() => location.reload(), 700); }
+          else { $("refMsg").textContent = "That code is invalid or already used."; $("refMsg").className = "ref-msg err"; }
+        };
+        $("refInput").addEventListener("keydown", (e) => { if (e.key === "Enter") $("refRedeem").click(); });
+      }
 
       const app = document.querySelector(".app");
       const isMobile = () => matchMedia("(max-width: 860px)").matches;
@@ -726,27 +788,67 @@
           $("admSave").disabled = false;
           if (!error && admTarget.id === USER.id) loadProfile();
         };
+        $("admGenCode").onclick = async () => {
+          $("admGenCode").disabled = true;
+          const code = "SEV-" + Math.random().toString(36).slice(2, 7).toUpperCase();
+          const { error } = await sb.from("referral_codes").insert({ code, created_by: USER.id });
+          $("admGenCode").disabled = false;
+          if (error) { $("admGenCode").textContent = "Error"; setTimeout(() => ($("admGenCode").textContent = "Generate a code"), 1800); return; }
+          loadAdminLists();
+        };
       }
 
       let CUR_PLAN = "Free";
+      // 2000 -> "2k", 1,500,000 -> "1.5m", 5,000,000 -> "5m"
+      function fmtCredits(n) {
+        n = Number(n) || 0;
+        if (n >= 1e6) return (n / 1e6).toFixed(n % 1e6 ? 1 : 0).replace(/\.0$/, "") + "m";
+        if (n >= 1e3) return (n / 1e3).toFixed(n % 1e3 ? 1 : 0).replace(/\.0$/, "") + "k";
+        return String(n);
+      }
       function setCreditsDisplay(credits) {
-        $("acctSub").textContent = CUR_PLAN + " · " + credits + " credits";
-        $("billCredits").textContent = credits + " credits · resets monthly";
+        $("acctSub").textContent = CUR_PLAN + " · " + fmtCredits(credits) + " credits";
+        $("billCredits").textContent = fmtCredits(credits) + " credits · resets monthly";
       }
       async function spendCredits(cost) {
         if (!cost || isTest()) return;
         const { data, error } = await sb.rpc("spend_credits", { cost });
         if (!error && typeof data === "number") setCreditsDisplay(data);
       }
+      // Unlock the model picker by plan: max -> pro+max selectable, pro -> pro.
+      function unlockModels(plan) {
+        const allow = plan === "max" ? ["pro", "max"] : plan === "pro" ? ["pro"] : [];
+        document.querySelectorAll(".model-opt.locked").forEach((o) => {
+          if (allow.includes(o.dataset.tier)) {
+            o.classList.remove("locked");
+            const tag = o.querySelector(".lock-tag"); if (tag) tag.remove();
+            const chk = document.createElement("span"); chk.className = "check";
+            chk.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12l5 5L20 6"/></svg>';
+            o.appendChild(chk);
+          }
+        });
+      }
       async function loadProfile() {
-        const { data: prof } = await sb.from("profiles").select("plan,credits,is_admin").eq("id", USER.id).maybeSingle();
+        const { data: prof } = await sb.from("profiles").select("plan,credits,is_admin,invited").eq("id", USER.id).maybeSingle();
         const plan = prof ? prof.plan : "free";
         const credits = prof ? prof.credits : 1000;
         CUR_PLAN = plan.charAt(0).toUpperCase() + plan.slice(1);
         const pl = document.querySelector("#profMenu .pl"); if (pl) pl.textContent = CUR_PLAN + " plan";
         $("billPlan").textContent = CUR_PLAN + " plan";
         setCreditsDisplay(credits);
-        if (prof && prof.is_admin) $("adminNav").style.display = "block";
+        unlockModels(plan);
+        if (prof && prof.is_admin) { $("adminNav").style.display = "block"; loadAdminLists(); }
+        return prof;
+      }
+
+      // ---- admin: referral codes + user list ----
+      async function loadAdminLists() {
+        const { data: codes } = await sb.from("referral_codes").select("code,used_by,created_at").order("created_at", { ascending: false }).limit(50);
+        const cl = $("admCodes");
+        if (cl) cl.innerHTML = (codes && codes.length) ? codes.map((c) => '<div class="adm-row"><span class="e adm-code">' + esc(c.code) + '</span><span class="m">' + (c.used_by ? "used" : "unused") + "</span></div>").join("") : '<div class="adm-row"><span class="m">No codes yet.</span></div>';
+        const { data: users } = await sb.from("profiles").select("email,plan,credits,invited").order("created_at", { ascending: false }).limit(200);
+        const ul = $("admUsers");
+        if (ul) ul.innerHTML = (users && users.length) ? users.map((u) => '<div class="adm-row"><span class="e">' + esc(u.email || "—") + '</span><span class="m">' + esc(u.plan) + " · " + fmtCredits(u.credits) + (u.invited ? "" : " · ⏳") + "</span></div>").join("") : '<div class="adm-row"><span class="m">No users yet.</span></div>';
       }
 
       // ---- conversation list (saved chat history) ----
