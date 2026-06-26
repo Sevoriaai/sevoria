@@ -102,7 +102,7 @@ insert into public.profiles (id, email)
   select id, email from auth.users on conflict (id) do nothing;
 
 -- AFTER the owner account exists, make it an admin (run once):
---   update public.profiles set is_admin = true where email = 'richyrachfansgmial@gmail.com';
+--   update public.profiles set is_admin = true where email = 'YOUR_OWNER_EMAIL';
 
 -- Spend credits: lets a signed-in user decrement THEIR OWN balance (never below
 -- zero) and returns the new balance. SECURITY DEFINER so it can update the row
@@ -174,3 +174,21 @@ end; $$;
 
 grant select, insert, update, delete on public.referral_codes to authenticated;
 grant execute on function public.redeem_referral(text) to authenticated;
+
+-- =====================================================================
+-- INSTALL BONUS: +300 credits, once, when a user opens the installed app.
+-- =====================================================================
+alter table public.profiles add column if not exists install_bonus_claimed boolean not null default false;
+
+create or replace function public.claim_install_bonus() returns integer
+  language plpgsql security definer set search_path = public as $$
+declare newbal integer;
+begin
+  update public.profiles
+     set credits = credits + 300, install_bonus_claimed = true, updated_at = now()
+   where id = auth.uid() and install_bonus_claimed = false
+  returning credits into newbal;
+  return newbal;  -- null if it was already claimed
+end; $$;
+
+grant execute on function public.claim_install_bonus() to authenticated;

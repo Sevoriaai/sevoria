@@ -314,7 +314,7 @@
         <div class="acct-wrap">
           <div class="acct" id="acctBtn">
             <div class="avatar" id="avatar">Y</div>
-            <div class="acct-meta"><span class="acct-name" id="acctName">You</span><span class="acct-sub" id="acctSub">Free · 120 credits</span></div>
+            <div class="acct-meta"><span class="acct-name" id="acctName">You</span><span class="acct-sub" id="acctSub">Free</span></div>
             <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
           </div>
           <div class="menu" id="profMenu">
@@ -549,7 +549,7 @@
       const sb = window.sb;
       const $ = (id) => document.getElementById(id);
       const API = "https://hitting-are-invalid-chargers.trycloudflare.com"; // ← tunnel URL (ephemeral; re-point on restart)
-      const VERSION = "v0.8";
+      const VERSION = "v0.9";
       const OWNER_EMAIL = "richyrachfansgmial@gmail.com"; // always exempt from the invite gate
       let USER = null;
       $("menuVer").textContent = "Sevoria " + VERSION + " · Beta";
@@ -575,9 +575,10 @@
         // Invite-only beta: block the app until the user redeems a code.
         // The owner is always exempt (so you can never be locked out of your own site),
         // as is any admin or anyone already invited.
-        const exempt = USER.email === OWNER_EMAIL || (prof && (prof.is_admin || prof.invited));
+        const exempt = (USER.email || "").toLowerCase() === OWNER_EMAIL || (prof && (prof.is_admin || prof.invited));
         if (!exempt) { showRefGate(); return; }
         loadConversations();
+        maybeInstallBonus();
       })();
 
       // ---- referral gate (private beta) ----
@@ -850,6 +851,22 @@
             o.appendChild(chk);
           }
         });
+      }
+      // lightweight global toast (bottom-center)
+      function gToast(text) {
+        const t = document.createElement("div");
+        t.textContent = text;
+        t.style.cssText = "position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:9999;background:var(--ink);color:var(--on-ink);font-size:13px;font-weight:600;padding:10px 18px;border-radius:20px;box-shadow:var(--shadow);opacity:0;transition:opacity .25s;";
+        document.body.appendChild(t);
+        requestAnimationFrame(() => (t.style.opacity = "1"));
+        setTimeout(() => { t.style.opacity = "0"; setTimeout(() => t.remove(), 300); }, 3200);
+      }
+      // Award the +300 install bonus once, when the installed (standalone) app is opened.
+      async function maybeInstallBonus() {
+        const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+        if (!standalone) return;
+        const { data, error } = await sb.rpc("claim_install_bonus");
+        if (!error && typeof data === "number") { setCreditsDisplay(data); gToast("+300 credits for installing the app 🤍"); }
       }
       async function loadProfile() {
         let { data: prof, error } = await sb.from("profiles").select("plan,credits,is_admin,invited").eq("id", USER.id).maybeSingle();

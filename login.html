@@ -61,7 +61,7 @@
       .cta { width: 100%; padding: 13px; margin-top: 4px; font: inherit; font-weight: 600; font-size: 15px; color: #fff; background: var(--ink); border: none; border-radius: 10px; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 9px; }
       .cta:hover { background: #000; }
       .cta:disabled { opacity: 0.55; cursor: default; }
-      .spin { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+      .spin { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; box-sizing: border-box; }
       @keyframes spin { to { transform: rotate(360deg); } }
 
       .terms-note { font-size: 12px; color: var(--on-bone-mut); line-height: 1.55; margin: 0 0 4px; }
@@ -218,8 +218,11 @@
               </div>
               <button class="cta" id="pwBtn" type="submit"><span class="lbl">Sign in</span></button>
               <p class="ministep">
-                <button type="button" id="codeInstead">Email me a code instead</button>
+                <button type="button" id="forgotPw">Forgot password?</button>
                 <span class="sep">·</span>
+                <button type="button" id="codeInstead">Email me a code instead</button>
+              </p>
+              <p class="ministep">
                 <button type="button" id="useDiff2">Use a different email</button>
               </p>
             </div>
@@ -374,6 +377,12 @@
         msg(error ? error.message : "A fresh code is on its way.", !error);
       });
       $("usePw").addEventListener("click", () => setStep("pw"));
+      $("forgotPw").addEventListener("click", async () => {
+        const email = currentEmail || $("email").value.trim();
+        if (!validEmail(email)) return msg("Enter your email first, then tap Forgot password.");
+        const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.href });
+        msg(error ? error.message : "Password reset link sent — check your email.", !error);
+      });
       $("codeInstead").addEventListener("click", async () => { verifyType = "email"; const err = await sendCode(currentEmail); setStep("code"); msg(err ? err.message : "Code sent — check your email.", !err); });
       $("useDiff").addEventListener("click", () => setStep("email"));
       $("useDiff2").addEventListener("click", () => setStep("email"));
