@@ -326,11 +326,21 @@
       }
 
       async function verifyCode() {
-        const token = $("code").value.trim();
-        if (token.length < 6) return msg("Enter the 6-digit code.");
+        const token = $("code").value.replace(/\D/g, ""); // digits only (tolerate spaces/dashes)
+        if (token.length < 6) return msg("Enter the 6-digit code from your email.");
+        if (!currentEmail) return msg("Start again from the email step.");
         busy($("verifyBtn"), true);
-        const { error } = await sb.auth.verifyOtp({ email: currentEmail, token, type: verifyType });
-        if (error) { busy($("verifyBtn"), false, "Verify &amp; continue"); return msg("That code didn't match or has expired. Try again or resend."); }
+        let { error } = await sb.auth.verifyOtp({ email: currentEmail, token, type: verifyType });
+        // If a fresh sign-in code was actually a confirm-signup code (or vice-versa), try the other type once.
+        if (error) {
+          const alt = verifyType === "email" ? "signup" : "email";
+          const r2 = await sb.auth.verifyOtp({ email: currentEmail, token, type: alt });
+          if (!r2.error) error = null;
+        }
+        if (error) {
+          busy($("verifyBtn"), false, "Verify &amp; continue");
+          return msg(error.message || "That code didn't match. Request a new one and try again.");
+        }
         location.href = "chat.html";
       }
 
