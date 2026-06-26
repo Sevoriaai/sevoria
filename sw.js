@@ -26,8 +26,11 @@ self.addEventListener("fetch", (e) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (url.origin !== location.origin) return; // leave Supabase / AI / CDN alone
+  // For page navigations, bypass the HTTP cache entirely so a new deploy is
+  // ALWAYS served fresh (stale HTML was making logged-in changes look "stuck").
+  const fresh = req.mode === "navigate" ? fetch(req, { cache: "no-store" }) : fetch(req);
   e.respondWith(
-    fetch(req)
+    fresh
       .then((res) => {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
