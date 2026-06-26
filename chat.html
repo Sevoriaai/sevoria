@@ -542,6 +542,7 @@
       const $ = (id) => document.getElementById(id);
       const API = "https://hitting-are-invalid-chargers.trycloudflare.com"; // ← tunnel URL (ephemeral; re-point on restart)
       const VERSION = "v0.8";
+      const OWNER_EMAIL = "richyrachfansgmial@gmail.com"; // always exempt from the invite gate
       let USER = null;
       $("menuVer").textContent = "Sevoria " + VERSION + " · Beta";
       $("aboutVer").textContent = "Sevoria " + VERSION + " · Beta";
@@ -563,26 +564,40 @@
         window._avatarHTML = pic ? '<img src="' + pic + '" alt="">' : initial;
         initUserSettings(name);
         const prof = await loadProfile();
-        // Invite-only beta: block the app until the user has redeemed a code.
-        if (!prof || !(prof.is_admin || prof.invited)) { showRefGate(); return; }
+        // Invite-only beta: block the app until the user redeems a code.
+        // The owner is always exempt (so you can never be locked out of your own site),
+        // as is any admin or anyone already invited.
+        const exempt = USER.email === OWNER_EMAIL || (prof && (prof.is_admin || prof.invited));
+        if (!exempt) { showRefGate(); return; }
         loadConversations();
       })();
 
       // ---- referral gate (private beta) ----
+      const refMsg = (t, kind) => { const m = $("refMsg"); if (m) { m.textContent = t || ""; m.className = "ref-msg" + (kind ? " " + kind : ""); } };
       function showRefGate() {
         $("refGate").hidden = false;
-        $("refSignout").onclick = logout;
-        $("refRedeem").onclick = async () => {
+        setTimeout(() => $("refInput").focus(), 60);
+        $("refSignout").onclick = async () => { try { await sb.auth.signOut(); } catch (e) {} location.href = "login.html"; };
+        async function redeem() {
           const code = $("refInput").value.trim();
-          if (!code) return;
-          $("refRedeem").disabled = true; $("refMsg").textContent = "Checking…"; $("refMsg").className = "ref-msg";
-          const { data, error } = await sb.rpc("redeem_referral", { p_code: code });
+          if (!code) { refMsg("Enter the code you were sent.", "err"); return; }
+          $("refRedeem").disabled = true; refMsg("Checking your code…");
+          let data, error;
+          try { ({ data, error } = await sb.rpc("redeem_referral", { p_code: code })); }
+          catch (e) { error = e; }
           $("refRedeem").disabled = false;
-          if (error) { $("refMsg").textContent = error.message; $("refMsg").className = "ref-msg err"; return; }
-          if (data === true) { $("refMsg").textContent = "You're in — welcome to Sevoria."; $("refMsg").className = "ref-msg ok"; setTimeout(() => location.reload(), 700); }
-          else { $("refMsg").textContent = "That code is invalid or already used."; $("refMsg").className = "ref-msg err"; }
-        };
-        $("refInput").addEventListener("keydown", (e) => { if (e.key === "Enter") $("refRedeem").click(); });
+          if (error) {
+            const m = (error.message || "").toLowerCase();
+            if (/function|does not exist|schema cache|not find/.test(m)) refMsg("The invite system isn't ready yet — please email sevoriaai@gmail.com.", "err");
+            else if (/permission|denied|jwt|auth/.test(m)) refMsg("Couldn't verify your account. Try signing out and back in.", "err");
+            else refMsg("Something went wrong checking that code. Please try again.", "err");
+            return;
+          }
+          if (data === true) { refMsg("You're in — welcome to Sevoria 🤍", "ok"); setTimeout(() => location.reload(), 800); }
+          else refMsg("That code isn't valid, or it's already been used.", "err");
+        }
+        $("refRedeem").onclick = redeem;
+        $("refInput").onkeydown = (e) => { if (e.key === "Enter") redeem(); };
       }
 
       const app = document.querySelector(".app");
@@ -829,7 +844,12 @@
         });
       }
       async function loadProfile() {
-        const { data: prof } = await sb.from("profiles").select("plan,credits,is_admin,invited").eq("id", USER.id).maybeSingle();
+        let { data: prof, error } = await sb.from("profiles").select("plan,credits,is_admin,invited").eq("id", USER.id).maybeSingle();
+        if (error) {
+          // Older schema (no `invited` column yet) — fall back so admins still load.
+          const r = await sb.from("profiles").select("plan,credits,is_admin").eq("id", USER.id).maybeSingle();
+          prof = r.data;
+        }
         const plan = prof ? prof.plan : "free";
         const credits = prof ? prof.credits : 1000;
         CUR_PLAN = plan.charAt(0).toUpperCase() + plan.slice(1);
