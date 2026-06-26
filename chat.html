@@ -571,12 +571,8 @@
         $("setName").value = name;
         window._avatarHTML = pic ? '<img src="' + pic + '" alt="">' : initial;
         initUserSettings(name);
-        const prof = await loadProfile();
-        // Invite-only beta: block the app until the user redeems a code.
-        // The owner is always exempt (so you can never be locked out of your own site),
-        // as is any admin or anyone already invited.
-        const exempt = (USER.email || "").toLowerCase() === OWNER_EMAIL || (prof && (prof.is_admin || prof.invited));
-        if (!exempt) { showRefGate(); return; }
+        await loadProfile();
+        // (Referral gate removed — the site is open to anyone signed in.)
         loadConversations();
         maybeInstallBonus();
       })();
@@ -863,8 +859,8 @@
       }
       // Award the +300 install bonus once, when the installed (standalone) app is opened.
       async function maybeInstallBonus() {
-        const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
-        if (!standalone) return;
+        const inApp = /SevoriaApp/.test(navigator.userAgent) || window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+        if (!inApp) return;
         const { data, error } = await sb.rpc("claim_install_bonus");
         if (!error && typeof data === "number") { setCreditsDisplay(data); gToast("+300 credits for installing the app 🤍"); }
       }

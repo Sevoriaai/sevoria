@@ -1,7 +1,7 @@
 // Sevoria service worker — makes the site installable + works offline-ish.
 // Network-first for same-origin GETs (so new deploys always win), with a cache
 // fallback when offline. Never touches Supabase, the AI tunnel, or CDNs.
-const CACHE = "sevoria-v0_9";
+const CACHE = "sevoria-v1_0";
 const SHELL = [
   "./", "./index.html", "./chat.html", "./login.html",
   "./assets/styles.css", "./manifest.webmanifest",
