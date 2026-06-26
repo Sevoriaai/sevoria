@@ -47,7 +47,7 @@
       input { width: 100%; padding: 13px 14px; font: inherit; font-size: 15px; color: var(--on-bone); background: var(--bone-card); border: 1px solid var(--line-bone); border-radius: 10px; transition: border-color 0.15s, box-shadow 0.15s; }
       input::placeholder { color: #a8a499; }
       input:focus { outline: none; border-color: var(--brass); box-shadow: 0 0 0 3px rgba(194, 146, 46, 0.18); }
-      .code-input { text-align: center; font-size: 26px; letter-spacing: 12px; font-weight: 600; padding: 14px 14px 14px 26px; font-family: "Fraunces", serif; }
+      .code-input { text-align: center; font-size: 24px; letter-spacing: 7px; font-weight: 600; padding: 14px 14px 14px 21px; font-family: "Fraunces", serif; }
       .pw-wrap { position: relative; }
       .pw-wrap input { padding-right: 44px; }
       .pw-eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--on-bone-mut); padding: 7px; display: flex; border-radius: 8px; }
@@ -192,7 +192,7 @@
             <div class="step" id="step-code" hidden>
               <div class="field">
                 <label for="code">Verification code</label>
-                <input id="code" class="code-input" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="one-time-code" />
+                <input id="code" class="code-input" inputmode="numeric" maxlength="10" placeholder="Enter code" autocomplete="one-time-code" />
               </div>
               <button class="cta" id="verifyBtn" type="submit"><span class="lbl">Verify &amp; continue</span></button>
               <p class="ministep">
